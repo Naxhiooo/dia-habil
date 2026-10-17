@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="es-CL">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Optimizador de vacaciones 2027 en Chile: aprovecha los feriados | Día Hábil</title>
+  <meta name="description" content="Dinos cuántos días de vacaciones tienes y te decimos qué fechas pedir para descansar más días seguidos, usando los feriados y fines de semana largos de Chile 2026, 2027 y 2028.">
+  <meta property="og:title" content="Optimizador de vacaciones en Chile: cuándo pedir tus días">
+  <meta property="og:description" content="Con 15 días de vacaciones puedes descansar mucho más. Te decimos qué fechas pedir.">
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="es_CL">
+  <!-- AdSense: al ser aprobado, reemplazar ca-pub-XXXX por el ID de editor y descomentar.
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX" crossorigin="anonymous"></script> -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Optimizador de vacaciones para Chile",
+    "applicationCategory": "UtilitiesApplication",
+    "operatingSystem": "Cualquiera",
+    "inLanguage": "es-CL",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "CLP" },
+    "description": "Calcula qué días de vacaciones pedir para descansar más días seguidos con los feriados de Chile."
+  }
+  </script>
+  <!-- @head -->
+</head>
+<body>
+  <!-- @cabecera -->
+
+  <main id="principal" class="envoltura">
+    <section class="portada revela">
+      <div class="antetitulo">Optimizador de vacaciones · Chile</div>
+      <h1>Saca más días libres con tus vacaciones</h1>
+      <p class="bajada">Dinos cuántos días tienes. Te mostramos qué fechas pedir para juntarlos con feriados y fines de semana y descansar más días seguidos.</p>
+    </section>
+
+    <section class="herramienta revela" aria-label="Optimizador">
+      <form class="tarjeta" id="formulario" novalidate>
+        <fieldset class="campo">
+          <legend class="etiqueta">Año</legend>
+          <div class="segmentos" id="anios">
+            <label><input type="radio" name="anio" value="2026">2026<small>desde hoy</small></label>
+            <label><input type="radio" name="anio" value="2027">2027<small>año completo</small></label>
+            <label><input type="radio" name="anio" value="2028">2028<small>año completo</small></label>
+          </div>
+        </fieldset>
+
+        <div class="campo">
+          <label for="dias">Días de vacaciones que tienes</label>
+          <div class="cantidad" data-cantidad>
+            <button type="button" data-menos aria-label="Un día menos">−</button>
+            <input type="number" id="dias" name="dias" inputmode="numeric" min="1" max="30" value="15">
+            <button type="button" data-mas aria-label="Un día más">+</button>
+          </div>
+          <span class="ayuda">Días hábiles. Lo normal son 15 al año; con más de 10 años trabajados pueden ser más.</span>
+        </div>
+
+        <fieldset class="campo">
+          <legend class="etiqueta">¿Cómo quieres usarlos?</legend>
+          <div class="opciones">
+            <label class="opcion"><input type="radio" name="estilo" value="ley" checked><div><strong>Un viaje de 10+ días y el resto en puentes</strong><span>Como lo pide la ley: al menos 10 días hábiles seguidos; el resto se puede repartir de común acuerdo.</span></div></label>
+            <label class="opcion"><input type="radio" name="estilo" value="largo"><div><strong>Todo en un solo viaje</strong><span>El período más largo posible con todos tus días.</span></div></label>
+            <label class="opcion"><input type="radio" name="estilo" value="sueltos"><div><strong>Solo días sueltos</strong><span>Para días administrativos o permisos acordados, no para el feriado legal.</span></div></label>
+          </div>
+        </fieldset>
+
+        <div class="fila">
+          <div class="campo">
+            <label for="mes">Viaje largo en</label>
+            <select id="mes" name="mes">
+              <option value="0">Donde rinda más</option>
+              <option value="1">Enero</option><option value="2">Febrero</option><option value="3">Marzo</option>
+              <option value="4">Abril</option><option value="5">Mayo</option><option value="6">Junio</option>
+              <option value="7">Julio</option><option value="8">Agosto</option><option value="9">Septiembre</option>
+              <option value="10">Octubre</option><option value="11">Noviembre</option><option value="12">Diciembre</option>
+            </select>
+          </div>
+          <div class="campo">
+            <label for="region">Feriados regionales</label>
+            <select id="region" name="region">
+              <option value="nacional">Solo nacionales</option>
+              <option value="arica">Arica y Parinacota</option>
+              <option value="chillan">Chillán y Chillán Viejo</option>
+            </select>
+          </div>
+        </div>
+      </form>
+
+      <div class="resultado">
+        <div class="tarjeta" aria-live="polite" aria-busy="true" id="resultado">
+          <span class="sr" data-carga>Buscando las mejores fechas…</span>
+          <div class="resumen-plan">
+            <div class="cifra" id="cifra"><span class="esq esq-cifra"></span></div>
+            <div class="cifra-texto" id="cifra-texto"><span class="esq esq-linea larga"></span><span class="esq esq-linea media"></span></div>
+          </div>
+          <div id="avisos"></div>
+          <ul class="viajes" id="viajes">
+            <li><span class="esq esq-fila"></span></li>
+            <li><span class="esq esq-fila"></span></li>
+            <li><span class="esq esq-fila"></span></li>
+            <li><span class="esq esq-fila"></span></li>
+          </ul>
+          <div class="acciones">
+            <button type="button" class="boton" id="btn-calendario">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4M12 13v5M9.5 15.5h5"/></svg>
+              Guardar el plan en mi calendario
+            </button>
+            <a class="boton secundario" id="btn-whatsapp" href="#" target="_blank" rel="noopener">Compartir por WhatsApp</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="seccion-anio" aria-labelledby="titulo-anio" aria-busy="true" style="margin-top:var(--espacio-seccion)">
+      <h2 id="titulo-anio">Tu año, mes a mes</h2>
+      <div class="leyenda" style="margin-top:0">
+        <span><i class="l-pedir"></i>Día que pides</span>
+        <span><i class="l-libre"></i>Día libre del viaje</span>
+        <span><i class="l-feriado"></i>Feriado</span>
+      </div>
+      <div class="meses" id="meses">
+        <span class="esq esq-mes"></span><span class="esq esq-mes"></span><span class="esq esq-mes"></span><span class="esq esq-mes"></span>
+        <span class="esq esq-mes"></span><span class="esq esq-mes"></span><span class="esq esq-mes"></span><span class="esq esq-mes"></span>
+      </div>
+    </section>
+
+    <aside class="anuncio" aria-label="Publicidad">Espacio reservado para un anuncio (AdSense)</aside>
+
+    <section class="dos-columnas" id="listas" aria-busy="true">
+      <div class="tarjeta">
+        <h2 style="font-size:var(--texto-xl)">Puentes que más rinden</h2>
+        <p class="detalle">Pidiendo pocos días, juntas un feriado con el fin de semana.</p>
+        <ul class="lista-simple" id="puentes" style="margin-top:var(--espacio-3)">
+          <li><span class="esq esq-linea larga"></span></li><li><span class="esq esq-linea media"></span></li><li><span class="esq esq-linea larga"></span></li><li><span class="esq esq-linea media"></span></li>
+        </ul>
+      </div>
+      <div class="tarjeta">
+        <h2 style="font-size:var(--texto-xl)">Fines de semana largos sin pedir días</h2>
+        <p class="detalle">Tres o más días libres seguidos gracias a los feriados.</p>
+        <ul class="lista-simple" id="largos" style="margin-top:var(--espacio-3)">
+          <li><span class="esq esq-linea media"></span></li><li><span class="esq esq-linea larga"></span></li><li><span class="esq esq-linea media"></span></li><li><span class="esq esq-linea larga"></span></li>
+        </ul>
+      </div>
+    </section>
+
+    <article class="contenido" style="margin-top:clamp(28px,5vw,48px)">
+      <h2>Cómo funciona</h2>
+      <p>Revisamos todas las combinaciones de días del año. Los sábados, domingos y feriados no gastan vacaciones; los demás días sí. Luego buscamos las fechas que te dejan más días libres seguidos con los días que tienes.</p>
+      <div class="ejemplo-caja">
+        <strong>Ejemplo 2027.</strong> El viernes 17 de septiembre es feriado adicional de Fiestas Patrias. Si pides el jueves 16, descansas del jueves 16 al domingo 19: <strong>4 días libres pidiendo 1</strong>.
+      </div>
+
+      <h2>Lo que dice la ley sobre las vacaciones</h2>
+      <ul>
+        <li><strong>15 días hábiles al año</strong> para quienes tienen más de un año de trabajo, con sueldo completo (Código del Trabajo, art. 67).</li>
+        <li><strong>Feriado progresivo:</strong> desde los 10 años trabajados, un día extra por cada 3 años nuevos (art. 68).</li>
+        <li><strong>El sábado no se descuenta</strong>: para las vacaciones siempre es inhábil, aunque trabajes ese día (art. 69).</li>
+        <li><strong>Al menos 10 días seguidos.</strong> Las vacaciones deben ser continuas; solo lo que exceda de 10 días hábiles se puede fraccionar, de común acuerdo con el empleador (<a href="https://www.derechopedia.cl/Art%C3%ADculo_70_del_C%C3%B3digo_del_Trabajo" rel="noopener">art. 70</a>). Por eso la opción recomendada siempre incluye un viaje de 10 días hábiles o más.</li>
+      </ul>
+
+      <h2>Preguntas frecuentes</h2>
+      <div class="preguntas">
+        <details><summary>¿Puedo pedir mis vacaciones en días sueltos?</summary><p>Solo lo que exceda de 10 días hábiles, y si tu empleador está de acuerdo. La opción "Solo días sueltos" sirve para días administrativos o permisos acordados.</p></details>
+        <details><summary>¿Por qué el viaje largo cae en un mes que no esperaba?</summary><p>Porque buscamos donde rinden más tus días. Si prefieres el verano, elige el mes en "Viaje largo en".</p></details>
+        <details><summary>¿Incluye feriados regionales?</summary><p>Sí, si los eliges: el 7 de junio en Arica y Parinacota y el 20 de agosto en Chillán y Chillán Viejo.</p></details>
+        <details><summary>¿Qué hago con el plan?</summary><p>Guárdalo en tu calendario y conversa las fechas con tu empleador. Las vacaciones se acuerdan con él; esta herramienta solo te ayuda a elegir.</p></details>
+      </div>
+    </article>
+
+    <aside class="anuncio" aria-label="Publicidad">Espacio reservado para un anuncio (AdSense)</aside>
+  </main>
+
+  <!-- @pie -->
+
+  <script type="module" src="/assets/js/ui-vacaciones.js"></script>
+</body>
+</html>

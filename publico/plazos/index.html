@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="es-CL">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Calculadora de días hábiles en Chile: ¿cuándo vence mi plazo? | Día Hábil</title>
+  <meta name="description" content="Calcula gratis el último día de un plazo en días hábiles en Chile, con todos los feriados 2026, 2027 y 2028 incluidos. Hábiles administrativos, de lunes a sábado o días corridos.">
+  <meta property="og:title" content="¿Hasta cuándo tengo plazo? Calculadora de días hábiles en Chile">
+  <meta property="og:description" content="El último día de tu plazo, con los feriados de Chile ya incluidos.">
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="es_CL">
+  <!-- AdSense: al ser aprobado, reemplazar ca-pub-XXXX por el ID de editor y descomentar.
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX" crossorigin="anonymous"></script> -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Calculadora de días hábiles para Chile",
+    "applicationCategory": "UtilitiesApplication",
+    "operatingSystem": "Cualquiera",
+    "inLanguage": "es-CL",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "CLP" },
+    "description": "Calcula el vencimiento de un plazo en días hábiles administrativos, de lunes a sábado o corridos, con los feriados de Chile."
+  }
+  </script>
+  <!-- @head -->
+</head>
+<body>
+  <!-- @cabecera -->
+
+  <main id="principal" class="envoltura">
+    <section class="portada revela">
+      <div class="antetitulo">Calculadora de días hábiles · Chile</div>
+      <h1>¿Hasta cuándo tengo plazo?</h1>
+      <p class="bajada">Indica cuándo te notificaron y cuántos días tienes. Te decimos el último día, con todos los feriados de Chile 2026–2028 ya descontados.</p>
+    </section>
+
+    <section class="herramienta revela" aria-label="Calculadora">
+      <form class="tarjeta" id="formulario" novalidate>
+        <div class="pestanas" role="tablist" aria-label="Tipo de cálculo">
+          <button type="button" role="tab" id="tab-vence" aria-controls="panel-vence" aria-selected="true" data-valor="vence">Calcular vencimiento</button>
+          <button type="button" role="tab" id="tab-contar" aria-controls="panel-contar" aria-selected="false" tabindex="-1" data-valor="contar">Contar entre fechas</button>
+        </div>
+
+        <div id="panel-vence" role="tabpanel" aria-labelledby="tab-vence">
+          <div class="fila">
+            <div class="campo">
+              <label for="inicio">Fecha de notificación</label>
+              <input type="date" id="inicio" name="inicio" min="2026-01-01" max="2028-12-31" required>
+            </div>
+            <div class="campo">
+              <label for="dias">Días de plazo</label>
+              <div class="cantidad" data-cantidad>
+                <button type="button" data-menos aria-label="Un día menos">−</button>
+                <input type="number" id="dias" name="dias" inputmode="numeric" min="1" max="730" value="10" required>
+                <button type="button" data-mas aria-label="Un día más">+</button>
+              </div>
+              <div class="atajos" aria-label="Plazos frecuentes">
+                <button type="button" data-dias="5">5</button>
+                <button type="button" data-dias="10">10</button>
+                <button type="button" data-dias="15">15</button>
+                <button type="button" data-dias="30">30</button>
+                <button type="button" data-dias="60">60</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div id="panel-contar" role="tabpanel" aria-labelledby="tab-contar" hidden>
+          <div class="fila">
+            <div class="campo">
+              <label for="desde">Desde</label>
+              <input type="date" id="desde" name="desde" min="2026-01-01" max="2028-12-31">
+            </div>
+            <div class="campo">
+              <label for="hasta">Hasta</label>
+              <input type="date" id="hasta" name="hasta" min="2026-01-01" max="2028-12-31">
+            </div>
+          </div>
+        </div>
+
+        <fieldset class="campo">
+          <legend class="etiqueta">¿Qué días cuentan?</legend>
+          <div class="opciones" id="modos">
+            <label class="opcion"><input type="radio" name="modo" value="lun-vie" checked><div><strong>Hábiles de lunes a viernes</strong><span>Trámites ante organismos públicos (Ley 19.880). No cuentan sábados, domingos ni feriados.</span></div></label>
+            <label class="opcion"><input type="radio" name="modo" value="lun-sab"><div><strong>Hábiles de lunes a sábado</strong><span>Habitual en juicios civiles. No cuentan domingos ni feriados.</span></div></label>
+            <label class="opcion"><input type="radio" name="modo" value="corridos"><div><strong>Días corridos</strong><span>Cuentan todos los días, incluidos fines de semana y feriados.</span></div></label>
+          </div>
+        </fieldset>
+
+        <div class="campo">
+          <label for="region">Feriados regionales</label>
+          <select id="region" name="region">
+            <option value="nacional">Solo feriados nacionales</option>
+            <option value="arica">Región de Arica y Parinacota (+ 7 de junio)</option>
+            <option value="chillan">Chillán y Chillán Viejo (+ 20 de agosto)</option>
+          </select>
+        </div>
+
+        <label class="casilla campo" id="caja-siguiente">
+          <input type="checkbox" id="siguiente" name="siguiente" checked>
+          <span>Empezar a contar el día siguiente<span class="ayuda">Es la regla general: el día en que te notifican no se cuenta.</span></span>
+        </label>
+        <label class="casilla campo oculto" id="caja-prorroga">
+          <input type="checkbox" id="prorroga" name="prorroga">
+          <span>Si vence en sábado, domingo o feriado, pasar al siguiente día hábil<span class="ayuda">Marca esta opción solo si la norma de tu plazo lo indica.</span></span>
+        </label>
+      </form>
+
+      <div class="resultado">
+        <div class="tarjeta" aria-live="polite" aria-busy="true" id="resultado">
+          <span class="sr" data-carga>Calculando tu plazo…</span>
+          <div class="respuesta">
+            <div class="hoja esq esq-hoja" id="hoja" data-esq="esq esq-hoja"></div>
+            <div>
+              <p class="titular" id="titular"><span class="esq esq-titulo"></span><span class="esq esq-titulo" style="width:55%"></span></p>
+              <p class="detalle" id="detalle"><span class="esq esq-linea larga"></span><span class="esq esq-linea media"></span></p>
+            </div>
+          </div>
+          <div id="avisos"></div>
+          <ul class="saltados" id="saltados"><li style="display:block"><span class="esq esq-linea media"></span><span class="esq esq-linea corta"></span></li></ul>
+          <div class="tira" id="tira">
+            <div class="esq-grilla-dias" aria-hidden="true">
+              <span class="esq esq-celda"></span><span class="esq esq-celda"></span><span class="esq esq-celda"></span><span class="esq esq-celda"></span><span class="esq esq-celda"></span><span class="esq esq-celda"></span><span class="esq esq-celda"></span>
+              <span class="esq esq-celda"></span><span class="esq esq-celda"></span><span class="esq esq-celda"></span><span class="esq esq-celda"></span><span class="esq esq-celda"></span><span class="esq esq-celda"></span><span class="esq esq-celda"></span>
+              <span class="esq esq-celda"></span><span class="esq esq-celda"></span><span class="esq esq-celda"></span><span class="esq esq-celda"></span><span class="esq esq-celda"></span><span class="esq esq-celda"></span><span class="esq esq-celda"></span>
+            </div>
+          </div>
+          <div class="acciones" id="acciones">
+            <button type="button" class="boton" id="btn-calendario">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4M12 13v5M9.5 15.5h5"/></svg>
+              Agregar a mi calendario
+            </button>
+            <a class="boton secundario" id="btn-whatsapp" href="#" target="_blank" rel="noopener">Compartir por WhatsApp</a>
+            <button type="button" class="boton secundario" id="btn-copiar">Copiar enlace</button>
+          </div>
+        </div>
+        <aside class="anuncio lateral" aria-label="Publicidad">Espacio reservado para un anuncio (AdSense)</aside>
+      </div>
+    </section>
+
+    <article class="contenido">
+      <h2>Cómo se cuentan los plazos en Chile</h2>
+      <p>No todos los plazos se cuentan igual. Antes de calcular, revisa qué dice la norma, resolución o contrato que te fija el plazo: si habla de <strong>días hábiles</strong> o de <strong>días</strong> a secas.</p>
+
+      <h3>Días hábiles administrativos (Ley 19.880)</h3>
+      <p>Se aplican a los trámites ante servicios públicos, municipalidades y ministerios. Según el <a href="https://iura.cl/19880/25" rel="noopener">artículo 25 de la Ley 19.880</a>:</p>
+      <ul>
+        <li>Son inhábiles los sábados, los domingos y los feriados.</li>
+        <li>El plazo se cuenta desde el día siguiente a la notificación o publicación.</li>
+        <li>Si el último día cae en un día inhábil, se prorroga al primer día hábil siguiente.</li>
+        <li>Si presentas un documento por internet en un día inhábil, se entiende presentado el primer día hábil siguiente.</li>
+      </ul>
+
+      <div class="ejemplo-caja">
+        <strong>Ejemplo.</strong> Te notifican el viernes 9 de octubre de 2026 y tienes 5 días hábiles para responder. Se cuenta desde el martes 13, porque el lunes 12 es feriado (Encuentro de Dos Mundos). El plazo vence el <strong>lunes 19 de octubre</strong>.
+      </div>
+
+      <h3>Hábiles de lunes a sábado</h3>
+      <p>En los juicios civiles los plazos de días se suspenden durante los feriados, pero el sábado sí se cuenta. Otras leyes tienen reglas propias; si tu plazo viene de un tribunal, confirma con tu abogado o con el tribunal.</p>
+
+      <h3>Días corridos</h3>
+      <p>Cuando la ley habla solo de "días", por regla general se cuentan todos, incluidos fines de semana y feriados (Código Civil, art. 50). Algunas normas agregan que, si el plazo vence en un día inhábil, pasa al siguiente hábil; por eso esa opción está disponible pero desmarcada.</p>
+
+      <h2>Preguntas frecuentes</h2>
+      <div class="preguntas">
+        <details><summary>¿El sábado es día hábil en Chile?</summary><p>Depende de la norma. En los trámites administrativos (Ley 19.880) no lo es. En los plazos judiciales civiles sí se cuenta. Para calcular vacaciones, el sábado es siempre inhábil.</p></details>
+        <details><summary>¿Desde qué día empiezo a contar?</summary><p>Por regla general, desde el día siguiente a la notificación. Si tu norma dice otra cosa, desmarca la opción "Empezar a contar el día siguiente".</p></details>
+        <details><summary>¿Qué pasa si el plazo vence un feriado?</summary><p>Si el plazo es de días hábiles, nunca vence en un día inhábil: la calculadora salta automáticamente los feriados. Si es de días corridos, depende de la norma.</p></details>
+        <details><summary>¿Están incluidos los feriados regionales?</summary><p>Sí, si los eliges: el 7 de junio en la Región de Arica y Parinacota y el 20 de agosto en Chillán y Chillán Viejo.</p></details>
+        <details><summary>¿Este resultado tiene validez legal?</summary><p>No. Es una ayuda para calcular. Ante un plazo importante (un recurso, una demanda, un reclamo), confirma con la institución o con un abogado.</p></details>
+      </div>
+    </article>
+
+    <aside class="anuncio" aria-label="Publicidad">Espacio reservado para un anuncio (AdSense)</aside>
+  </main>
+
+  <!-- @pie -->
+
+  <script type="module" src="/assets/js/ui-plazos.js"></script>
+</body>
+</html>

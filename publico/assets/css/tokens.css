@@ -1,0 +1,328 @@
+/*
+  Tokens de diseño de Día Hábil, en tres niveles. Cada nivel solo usa el anterior:
+
+  1. Primitivos   → la paleta en bruto, con nombres chilenos (--arena-*, --copihue-*…). No se usan directo en componentes.
+  2. Semánticos   → qué significa cada color (--color-texto-1, --color-feriado…). Cambian con el tema.
+  3. Componentes  → decisiones de cada pieza (--boton-primario-fondo, --dia-pedir-fondo…).
+
+  Jerarquía de color:
+  - Neutros: estructura. Fondo < superficie 1 < 2 < 3 (elevación) y texto 1 > 2 > 3 (importancia).
+    De día, arena del desierto; de noche, el cielo oscuro del norte.
+  - Copihue (rojo): solo feriados. Nunca para errores ni avisos.
+  - Cobre: la marca y lo que pide atención sin ser feriado (antetítulos, vencimientos, enlaces "ir").
+  - Lapislázuli (azul): vacaciones, foco del teclado e información.
+  - Atacama (ámbar) y araucaria (verde): avisos y confirmaciones.
+
+  Tipografía: Alegreya (títulos y cifras) + Alegreya Sans (texto), de Huerta Tipográfica.
+*/
+
+:root {
+  /* ===== 1. Primitivos ===== */
+
+  /* Arena: neutros cálidos del tema claro (desierto, adobe, papel de almanaque) */
+  --arena-0: #fffcf7;
+  --arena-50: #faf5ec;
+  --arena-100: #f4ede2;
+  --arena-150: #e9e0d0;
+  --arena-200: #dfd4c1;
+  --arena-300: #d2c5ae;
+  --arena-400: #b3a68f;
+  --arena-500: #8c8170;
+  --arena-600: #6b6255;
+  --arena-700: #4d453c;
+  --arena-800: #37312a;
+  --arena-900: #211d19;
+
+  /* Noche: neutros del tema oscuro (el cielo nocturno del norte; el texto, luz de luna) */
+  --noche-50: #ede7db;
+  --noche-100: #c5c0b5;
+  --noche-200: #9c988f;
+  --noche-600: #3a4153;
+  --noche-700: #2c3242;
+  --noche-750: #222838;
+  --noche-800: #181c26;
+  --noche-850: #141821;
+  --noche-900: #0f1219;
+
+  /* Copihue: la flor nacional. Feriados */
+  --copihue-50: #fceef0;
+  --copihue-100: #f8dde1;
+  --copihue-300: #ff8c9b;
+  --copihue-500: #c42a44;
+  --copihue-600: #a3192f;
+  --copihue-700: #7f1426;
+  --copihue-800: #4a1c26;
+
+  /* Lapislázuli: la piedra nacional. Vacaciones, foco e información */
+  --lapislazuli-50: #eef3fb;
+  --lapislazuli-100: #dce6f5;
+  --lapislazuli-300: #93b6f5;
+  --lapislazuli-500: #2e64b8;
+  --lapislazuli-600: #1f4e96;
+  --lapislazuli-700: #183d75;
+  --lapislazuli-800: #23324f;
+  --lapislazuli-900: #1a2338;
+
+  /* Cobre: el metal de Chile. Marca y énfasis */
+  --cobre-50: #fbf0e8;
+  --cobre-100: #f4dccb;
+  --cobre-300: #e8a070;
+  --cobre-600: #9a4f24;
+  --cobre-700: #7a3e1c;
+  --cobre-800: #3d2618;
+
+  /* Araucaria: confirmaciones */
+  --araucaria-100: #dcede2;
+  --araucaria-300: #8dd0a8;
+  --araucaria-600: #2e6a49;
+  --araucaria-800: #1c3a2a;
+
+  /* Atacama: avisos */
+  --atacama-100: #f6e8c9;
+  --atacama-300: #ebc36f;
+  --atacama-600: #a06d10;
+  --atacama-700: #7a5208;
+  --atacama-800: #3a2d14;
+
+  /* Escalas que no dependen del tema */
+  --espacio-1: 4px;
+  --espacio-2: 8px;
+  --espacio-3: 12px;
+  --espacio-4: 16px;
+  --espacio-5: 20px;
+  --espacio-6: 24px;
+  --espacio-8: 32px;
+  --espacio-10: 40px;
+  --espacio-12: 48px;
+  --espacio-16: 64px;
+  --espacio-seccion: clamp(28px, 5vw, 48px);
+
+  --radio-s: 6px;
+  --radio-m: 10px;
+  --radio-l: 14px;
+  --radio-pildora: 999px;
+
+  --fuente-display: 'Alegreya', 'Iowan Old Style', Georgia, serif;
+  --fuente-texto: 'Alegreya Sans', 'Segoe UI', system-ui, sans-serif;
+  --texto-xs: 0.78rem;
+  --texto-s: 0.9rem;
+  --texto-m: 1rem;
+  --texto-base: 1.125rem;
+  --texto-l: 1.22rem;
+  --texto-xl: 1.45rem;
+  --texto-2xl: clamp(1.55rem, 3.6vw, 2.1rem);
+  --texto-3xl: clamp(2.15rem, 5.8vw, 3.4rem);
+  --peso-normal: 400;
+  --peso-medio: 500;
+  --peso-fuerte: 700;
+  --peso-titulo: 600;
+  --peso-cifra: 700;
+  --interlineado: 1.55;
+  --interlineado-titulo: 1.12;
+  --espaciado-mayusculas: 0.12em;
+
+  --duracion-1: 120ms;
+  --duracion-2: 240ms;
+  --duracion-3: 450ms;
+  --duracion-esqueleto: 1.4s;
+  --curva-salida: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --curva-estandar: cubic-bezier(0.4, 0, 0.2, 1);
+
+  --capa-cabecera: 5;
+  --capa-saltar: 10;
+
+  /* ===== 2. Semánticos (tema claro) ===== */
+  color-scheme: light;
+
+  /* Superficies, de abajo hacia arriba */
+  --color-fondo: var(--arena-100);
+  --color-superficie-1: var(--arena-0);
+  --color-superficie-2: var(--arena-100);
+  --color-superficie-3: var(--arena-150);
+  --color-superficie-invertida: var(--arena-900);
+
+  /* Texto, de más a menos importante */
+  --color-texto-1: var(--arena-900);
+  --color-texto-2: var(--arena-700);
+  --color-texto-3: var(--arena-600);
+  --color-texto-deshabilitado: var(--arena-400);
+  --color-texto-invertido: var(--arena-100);
+
+  /* Bordes */
+  --color-borde-sutil: var(--arena-200);
+  --color-borde: var(--arena-300);
+  --color-borde-fuerte: var(--arena-400);
+  --color-foco: var(--lapislazuli-600);
+
+  /* Significado propio del sitio */
+  --color-marca: var(--cobre-600);
+  --color-marca-fondo: var(--cobre-100);
+  --color-marca-sobre: var(--arena-0);
+  --color-feriado: var(--copihue-600);
+  --color-feriado-fondo: var(--copihue-100);
+  --color-feriado-sobre: var(--arena-0);
+  --color-vacaciones: var(--lapislazuli-600);
+  --color-vacaciones-fondo: var(--lapislazuli-100);
+  --color-vacaciones-tinte: var(--lapislazuli-50);
+  --color-vacaciones-sobre: var(--arena-0);
+
+  /* Retroalimentación */
+  --color-info: var(--lapislazuli-600);
+  --color-info-fondo: var(--lapislazuli-50);
+  --color-exito: var(--araucaria-600);
+  --color-exito-fondo: var(--araucaria-100);
+  --color-aviso: var(--atacama-600);
+  --color-aviso-texto: var(--atacama-700);
+  --color-aviso-fondo: var(--atacama-100);
+
+  /* Carga */
+  --color-esqueleto: var(--arena-150);
+  --color-esqueleto-brillo: var(--arena-50);
+
+  /* Elevación */
+  --sombra-1: 0 1px 2px rgba(33, 29, 25, 0.08);
+  --sombra-2: 0 1px 0 rgba(33, 29, 25, 0.06), 0 10px 30px -18px rgba(33, 29, 25, 0.35);
+  --sombra-3: 0 2px 0 rgba(33, 29, 25, 0.06), 0 18px 40px -20px rgba(33, 29, 25, 0.45);
+
+  /* ===== 3. Componentes ===== */
+  --cabecera-fondo: color-mix(in srgb, var(--color-fondo) 88%, transparent);
+  --nav-activo-fondo: var(--color-superficie-invertida);
+  --nav-activo-texto: var(--color-texto-invertido);
+
+  --boton-primario-fondo: var(--color-superficie-invertida);
+  --boton-primario-texto: var(--color-texto-invertido);
+  --boton-secundario-borde: var(--color-texto-1);
+  --boton-secundario-texto: var(--color-texto-1);
+  --boton-secundario-hover: var(--color-superficie-3);
+
+  --campo-fondo: var(--color-superficie-2);
+  --campo-borde: var(--color-borde-fuerte);
+  --campo-borde-foco: var(--color-foco);
+  --campo-anillo-foco: var(--lapislazuli-100);
+
+  --tarjeta-fondo: var(--color-superficie-1);
+  --tarjeta-borde: var(--color-borde);
+  --tarjeta-sombra: var(--sombra-2);
+
+  /* La hoja de calendario es cobre; si muestra un feriado, copihue (clase .es-feriado). */
+  --hoja-fondo: var(--color-superficie-1);
+  --hoja-cabecera: var(--color-marca);
+  --hoja-cabecera-texto: var(--color-marca-sobre);
+  --hoja-sombra: var(--sombra-3);
+
+  --dia-cuenta-fondo: var(--color-superficie-1);
+  --dia-cuenta-texto: var(--color-texto-1);
+  --dia-cuenta-marca: var(--color-vacaciones);
+  --dia-inhabil-texto: var(--color-texto-3);
+  --dia-feriado-texto: var(--color-feriado);
+  --dia-vence-fondo: var(--color-superficie-invertida);
+  --dia-vence-texto: var(--color-texto-invertido);
+  --dia-pedir-fondo: var(--color-vacaciones);
+  --dia-pedir-texto: var(--color-vacaciones-sobre);
+  --dia-libre-fondo: var(--color-vacaciones-fondo);
+
+  --chip-feriado-fondo: var(--color-feriado);
+  --chip-feriado-texto: var(--color-feriado-sobre);
+  --chip-regional-fondo: var(--color-vacaciones);
+  --chip-regional-texto: var(--color-vacaciones-sobre);
+  --chip-neutro-fondo: var(--color-superficie-invertida);
+  --chip-neutro-texto: var(--color-texto-invertido);
+
+  --anuncio-fondo: color-mix(in srgb, var(--color-superficie-3) 60%, transparent);
+  --anuncio-borde: var(--color-borde-fuerte);
+  --anuncio-texto: var(--color-texto-3);
+}
+
+/* ===== Tema oscuro: solo se reasignan los semánticos ===== */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-tema='claro']) {
+    color-scheme: dark;
+    --color-fondo: var(--noche-900);
+    --color-superficie-1: var(--noche-800);
+    --color-superficie-2: var(--noche-850);
+    --color-superficie-3: var(--noche-750);
+    --color-superficie-invertida: var(--noche-50);
+    --color-texto-1: var(--noche-50);
+    --color-texto-2: var(--noche-100);
+    --color-texto-3: var(--noche-200);
+    --color-texto-deshabilitado: var(--noche-600);
+    --color-texto-invertido: var(--noche-900);
+    --color-borde-sutil: var(--noche-750);
+    --color-borde: var(--noche-700);
+    --color-borde-fuerte: var(--noche-600);
+    --color-foco: var(--lapislazuli-300);
+    --color-marca: var(--cobre-300);
+    --color-marca-fondo: var(--cobre-800);
+    --color-marca-sobre: var(--noche-900);
+    --color-feriado: var(--copihue-300);
+    --color-feriado-fondo: var(--copihue-800);
+    --color-feriado-sobre: var(--noche-900);
+    --color-vacaciones: var(--lapislazuli-300);
+    --color-vacaciones-fondo: var(--lapislazuli-800);
+    --color-vacaciones-tinte: var(--lapislazuli-900);
+    --color-vacaciones-sobre: var(--noche-900);
+    --color-info: var(--lapislazuli-300);
+    --color-info-fondo: var(--lapislazuli-900);
+    --color-exito: var(--araucaria-300);
+    --color-exito-fondo: var(--araucaria-800);
+    --color-aviso: var(--atacama-300);
+    --color-aviso-texto: var(--atacama-300);
+    --color-aviso-fondo: var(--atacama-800);
+    --color-esqueleto: var(--noche-750);
+    --color-esqueleto-brillo: var(--noche-700);
+    --sombra-1: 0 1px 2px rgba(0, 0, 0, 0.5);
+    --sombra-2: 0 1px 0 rgba(0, 0, 0, 0.4), 0 12px 30px -16px rgba(0, 0, 0, 0.8);
+    --sombra-3: 0 2px 0 rgba(0, 0, 0, 0.4), 0 18px 40px -18px rgba(0, 0, 0, 0.9);
+    --campo-anillo-foco: var(--lapislazuli-800);
+  }
+}
+
+/* El mismo tema oscuro, elegido a mano con el botón de la cabecera */
+:root[data-tema='oscuro'] {
+  color-scheme: dark;
+  --color-fondo: var(--noche-900);
+  --color-superficie-1: var(--noche-800);
+  --color-superficie-2: var(--noche-850);
+  --color-superficie-3: var(--noche-750);
+  --color-superficie-invertida: var(--noche-50);
+  --color-texto-1: var(--noche-50);
+  --color-texto-2: var(--noche-100);
+  --color-texto-3: var(--noche-200);
+  --color-texto-deshabilitado: var(--noche-600);
+  --color-texto-invertido: var(--noche-900);
+  --color-borde-sutil: var(--noche-750);
+  --color-borde: var(--noche-700);
+  --color-borde-fuerte: var(--noche-600);
+  --color-foco: var(--lapislazuli-300);
+  --color-marca: var(--cobre-300);
+  --color-marca-fondo: var(--cobre-800);
+  --color-marca-sobre: var(--noche-900);
+  --color-feriado: var(--copihue-300);
+  --color-feriado-fondo: var(--copihue-800);
+  --color-feriado-sobre: var(--noche-900);
+  --color-vacaciones: var(--lapislazuli-300);
+  --color-vacaciones-fondo: var(--lapislazuli-800);
+  --color-vacaciones-tinte: var(--lapislazuli-900);
+  --color-vacaciones-sobre: var(--noche-900);
+  --color-info: var(--lapislazuli-300);
+  --color-info-fondo: var(--lapislazuli-900);
+  --color-exito: var(--araucaria-300);
+  --color-exito-fondo: var(--araucaria-800);
+  --color-aviso: var(--atacama-300);
+  --color-aviso-texto: var(--atacama-300);
+  --color-aviso-fondo: var(--atacama-800);
+  --color-esqueleto: var(--noche-750);
+  --color-esqueleto-brillo: var(--noche-700);
+  --sombra-1: 0 1px 2px rgba(0, 0, 0, 0.5);
+  --sombra-2: 0 1px 0 rgba(0, 0, 0, 0.4), 0 12px 30px -16px rgba(0, 0, 0, 0.8);
+  --sombra-3: 0 2px 0 rgba(0, 0, 0, 0.4), 0 18px 40px -18px rgba(0, 0, 0, 0.9);
+  --campo-anillo-foco: var(--lapislazuli-800);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --duracion-1: 0ms;
+    --duracion-2: 0ms;
+    --duracion-3: 0ms;
+  }
+}

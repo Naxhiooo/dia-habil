@@ -1,0 +1,23 @@
+# Encabezados de Cloudflare Pages (https://developers.cloudflare.com/pages/configuration/headers/)
+
+/*
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), browsing-topics=()
+  X-Frame-Options: SAMEORIGIN
+  Strict-Transport-Security: max-age=31536000
+
+/assets/*
+  Cache-Control: public, max-age=86400, stale-while-revalidate=604800
+
+/assets/fuentes/*
+  Cache-Control: public, max-age=31536000, immutable
+  Access-Control-Allow-Origin: *
+
+/calendarios/*
+  Content-Type: text/calendar; charset=utf-8
+  Cache-Control: public, max-age=21600
+  Access-Control-Allow-Origin: *
+
+/estilos/*
+  X-Robots-Tag: noindex

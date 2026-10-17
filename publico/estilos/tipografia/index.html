@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="es-CL">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Comparación tipográfica | Día Hábil</title>
+  <meta name="robots" content="noindex">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alegreya:wght@400;600;700&family=Alegreya+Sans:wght@400;500;700&family=Asap:wght@400;500;700&family=Atkinson+Hyperlegible:wght@400;700&family=Encode+Sans:wdth,wght@75..125,400..800&family=Instrument+Sans:wght@400;500;700&family=Instrument+Serif&family=Literata:opsz,wght@7..72,400..700&family=Patua+One&family=Source+Sans+3:wght@400;600;700&family=Young+Serif&display=swap">
+  <style>
+    .probador { display: grid; grid-template-columns: repeat(auto-fill, minmax(330px, 1fr)); gap: var(--espacio-4); margin-top: var(--espacio-6); }
+    .probador .tarjeta { font-family: var(--x); }
+    .probador .origen { font-family: var(--fuente-texto); font-size: var(--texto-xs); letter-spacing: 0.1em; text-transform: uppercase; color: var(--color-texto-3); margin-bottom: var(--espacio-3); }
+    .probador .par { display: flex; gap: var(--espacio-4); align-items: center; margin-bottom: var(--espacio-3); }
+    .probador .grande { font-family: var(--t); font-size: 4.2rem; line-height: 1; font-weight: var(--tw, 400); font-variant-numeric: lining-nums; color: var(--color-feriado); }
+    .probador h3 { font-family: var(--t); font-weight: var(--tw, 400); font-size: 1.55rem; line-height: 1.15; margin: 0; }
+    .probador p { font-size: var(--tamano, 1.0625rem); line-height: 1.55; margin: 0 0 var(--espacio-3); color: var(--color-texto-2); }
+    .probador .cifras { font-variant-numeric: lining-nums tabular-nums; font-size: 1.1rem; color: var(--color-texto-1); }
+    .probador .nombre { font-family: var(--fuente-texto); font-weight: var(--peso-fuerte); }
+  </style>
+  <!-- @head -->
+</head>
+<body>
+  <main class="envoltura">
+    <section class="portada">
+      <div class="antetitulo">Uso interno · <a href="/estilos/">Guía de estilos</a></div>
+      <h1>Comparación tipográfica</h1>
+      <p class="bajada">El mismo resultado del sitio escrito con seis combinaciones de títulos y texto. Todas son gratuitas (licencia OFL) y se cargan desde Google Fonts.</p>
+    </section>
+
+    <div class="probador">
+      <article class="tarjeta" style="--t:'Young Serif';--x:'Atkinson Hyperlegible'">
+        <div class="origen">Actual · Francia y EE.UU.</div>
+        <div class="par"><div class="grande">18</div><h3>Tu plazo vence el lunes 19 de octubre</h3></div>
+        <p>5 días hábiles: el primero es el martes 13. En total pasan 10 días corridos desde la notificación, porque el lunes 12 es feriado.</p>
+        <p class="cifras">0123456789 · $1.250.000 · 15,25 %</p>
+        <p><span class="nombre">Young Serif + Atkinson Hyperlegible</span></p>
+      </article>
+
+      <article class="tarjeta" style="--t:'Alegreya';--tw:600;--x:'Alegreya Sans';--tamano:1.15rem">
+        <div class="origen">Huerta Tipográfica · Argentina</div>
+        <div class="par"><div class="grande">18</div><h3>Tu plazo vence el lunes 19 de octubre</h3></div>
+        <p>5 días hábiles: el primero es el martes 13. En total pasan 10 días corridos desde la notificación, porque el lunes 12 es feriado.</p>
+        <p class="cifras">0123456789 · $1.250.000 · 15,25 %</p>
+        <p><span class="nombre">Alegreya + Alegreya Sans</span></p>
+      </article>
+
+      <article class="tarjeta" style="--t:'Patua One';--x:'Asap'">
+        <div class="origen">LatinoType (Chile) + Omnibus-Type (Argentina)</div>
+        <div class="par"><div class="grande">18</div><h3>Tu plazo vence el lunes 19 de octubre</h3></div>
+        <p>5 días hábiles: el primero es el martes 13. En total pasan 10 días corridos desde la notificación, porque el lunes 12 es feriado.</p>
+        <p class="cifras">0123456789 · $1.250.000 · 15,25 %</p>
+        <p><span class="nombre">Patua One + Asap</span></p>
+      </article>
+
+      <article class="tarjeta" style="--t:'Instrument Serif';--x:'Instrument Sans'">
+        <div class="origen">Rodrigo Fuenzalida (Santiago) y Jordan Egstad</div>
+        <div class="par"><div class="grande">18</div><h3>Tu plazo vence el lunes 19 de octubre</h3></div>
+        <p>5 días hábiles: el primero es el martes 13. En total pasan 10 días corridos desde la notificación, porque el lunes 12 es feriado.</p>
+        <p class="cifras">0123456789 · $1.250.000 · 15,25 %</p>
+        <p><span class="nombre">Instrument Serif + Instrument Sans</span></p>
+      </article>
+
+      <article class="tarjeta" style="--t:'Encode Sans';--tw:700;--x:'Encode Sans'">
+        <div class="origen">Impallari Type · Argentina</div>
+        <div class="par"><div class="grande" style="font-stretch:112%">18</div><h3 style="font-stretch:112%">Tu plazo vence el lunes 19 de octubre</h3></div>
+        <p>5 días hábiles: el primero es el martes 13. En total pasan 10 días corridos desde la notificación, porque el lunes 12 es feriado.</p>
+        <p class="cifras">0123456789 · $1.250.000 · 15,25 %</p>
+        <p><span class="nombre">Encode Sans (ancha + normal)</span></p>
+      </article>
+
+      <article class="tarjeta" style="--t:'Literata';--tw:600;--x:'Source Sans 3'">
+        <div class="origen">Control: la usa la competencia</div>
+        <div class="par"><div class="grande">18</div><h3>Tu plazo vence el lunes 19 de octubre</h3></div>
+        <p>5 días hábiles: el primero es el martes 13. En total pasan 10 días corridos desde la notificación, porque el lunes 12 es feriado.</p>
+        <p class="cifras">0123456789 · $1.250.000 · 15,25 %</p>
+        <p><span class="nombre">Literata + Source Sans 3</span></p>
+      </article>
+    </div>
+  </main>
+</body>
+</html>

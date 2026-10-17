@@ -1,0 +1,19 @@
+{
+  "name": "dia-habil",
+  "version": "0.2.0",
+  "private": true,
+  "description": "Día Hábil: plazos en días hábiles, feriados y vacaciones en Chile (diahabil.cl)",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "dev": "node scripts/servidor.mjs",
+    "construir": "node scripts/construir.mjs",
+    "imagenes": "node scripts/imagenes.mjs",
+    "test": "node --test tests/*.test.mjs"
+  },
+  "devDependencies": {
+    "@resvg/resvg-js": "^2.6.2"
+  }
+}

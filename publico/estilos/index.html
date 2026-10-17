@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="es-CL">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Guía de estilos | Día Hábil</title>
+  <meta name="robots" content="noindex">
+  <!-- @head -->
+</head>
+<body>
+  <!-- @cabecera -->
+
+  <main class="envoltura">
+    <section class="portada">
+      <div class="antetitulo">Uso interno</div>
+      <h1>Guía de estilos</h1>
+      <p class="bajada">Los colores se definen en tres niveles en <code>assets/css/tokens.css</code>. Los componentes usan solo el nivel 2 y 3; cambiar de tema reasigna únicamente el nivel 2. Usa el botón de la cabecera para ver ambos temas.</p>
+    </section>
+
+    <article class="contenido" style="max-width:none">
+      <h2>Reglas de color</h2>
+      <ul>
+        <li><strong>Neutros</strong> dan la estructura: el fondo es lo más bajo y cada superficie sube un nivel. El texto 1 es lo más importante; el 3, ayudas y notas.</li>
+        <li><strong>Rojo</strong> significa feriado (y la marca). No se usa para errores ni avisos.</li>
+        <li><strong>Azul</strong> significa vacaciones, foco del teclado e información.</li>
+        <li><strong>Ámbar</strong> es para avisos; <strong>verde</strong>, para confirmaciones.</li>
+      </ul>
+    </article>
+
+    <h2>Nivel 2 · Semánticos</h2>
+    <div id="semanticos"></div>
+
+    <h2>Nivel 3 · Componentes</h2>
+    <div class="muestras" id="componentes"></div>
+
+    <h2>Nivel 1 · Primitivos</h2>
+    <div id="primitivos"></div>
+
+    <h2>Piezas</h2>
+    <div class="dos-columnas" style="margin-top:var(--espacio-4)">
+      <div class="tarjeta">
+        <div class="acciones" style="margin-top:0">
+          <button class="boton" type="button">Acción principal</button>
+          <button class="boton secundario" type="button">Secundaria</button>
+        </div>
+        <p style="margin-top:var(--espacio-4)"><span class="chip" style="margin-left:0">Irrenunciable</span><span class="chip regional">Regional</span><span class="chip neutro">Próximo</span></p>
+        <p class="nota">Nota informativa (azul).</p>
+        <p class="aviso">Aviso: algo requiere atención (ámbar).</p>
+      </div>
+      <div class="tarjeta" aria-busy="true">
+        <p class="detalle" style="margin-bottom:var(--espacio-3)">Esqueleto de carga</p>
+        <div class="respuesta">
+          <div class="esq esq-hoja"></div>
+          <div><span class="esq esq-titulo"></span><span class="esq esq-linea larga"></span><span class="esq esq-linea media"></span></div>
+        </div>
+        <div class="viajes"><span class="esq esq-fila"></span></div>
+      </div>
+    </div>
+  </main>
+
+  <script type="module" src="/assets/js/ui-estilos.js"></script>
+</body>
+</html>
