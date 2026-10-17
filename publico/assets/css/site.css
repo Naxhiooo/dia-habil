@@ -211,7 +211,7 @@ input[type='number'] { font-family: var(--fuente-display); font-weight: var(--pe
 .viaje:hover .medidor::before, .viaje.activo .medidor::before { background: var(--color-vacaciones-tinte); }
 .medidor span { position: relative; }
 
-.meses { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 14px; margin-top: 18px; }
+.meses { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(200px, 100%), 1fr)); gap: 14px; margin-top: 18px; }
 .mes-mini { background: var(--tarjeta-fondo); border: 1px solid var(--tarjeta-borde); border-radius: 12px; padding: 10px 10px var(--espacio-3); }
 .mes-mini h3 { font-size: 1rem; margin: 0 0 6px; text-transform: capitalize; display: flex; justify-content: space-between; align-items: baseline; }
 .mes-mini h3 small { font-family: var(--fuente-texto); font-size: var(--texto-xs); color: var(--color-vacaciones); font-weight: var(--peso-fuerte); text-transform: none; }
@@ -245,7 +245,7 @@ input[type='number'] { font-family: var(--fuente-display); font-weight: var(--pe
 .proximo p { margin: 0; text-align: center; max-width: 26ch; color: var(--color-texto-2); }
 .proximo .faltan { font-family: var(--fuente-display); font-weight: var(--peso-titulo); font-size: 1.35rem; color: var(--color-texto-1); }
 
-.herramientas { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: var(--espacio-4); }
+.herramientas { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr)); gap: var(--espacio-4); }
 .acceso { display: flex; flex-direction: column; gap: 10px; text-decoration: none; padding: var(--espacio-6); border-radius: var(--radio-l); background: var(--tarjeta-fondo); border: 1px solid var(--tarjeta-borde); box-shadow: var(--tarjeta-sombra); transition: transform var(--duracion-2) var(--curva-salida), border-color var(--duracion-2) var(--curva-salida); }
 .acceso:hover { transform: translateY(-3px); border-color: var(--color-texto-2); }
 .acceso h2 { margin: 0; font-size: 1.6rem; }

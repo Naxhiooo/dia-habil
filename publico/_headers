@@ -7,7 +7,14 @@
   X-Frame-Options: SAMEORIGIN
   Strict-Transport-Security: max-age=31536000
 
-/assets/*
+# Reglas separadas por carpeta: si dos reglas coinciden, Cloudflare junta sus valores.
+/assets/css/*
+  Cache-Control: public, max-age=86400, stale-while-revalidate=604800
+
+/assets/js/*
+  Cache-Control: public, max-age=86400, stale-while-revalidate=604800
+
+/assets/img/*
   Cache-Control: public, max-age=86400, stale-while-revalidate=604800
 
 /assets/fuentes/*
