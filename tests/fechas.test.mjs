@@ -4,6 +4,7 @@ import { FERIADOS } from '../publico/assets/js/feriados.js';
 import {
   aNum, aISO, diaSemana, calcularPlazo, contarHabiles,
   construirDias, generarBloques, viajesMasLargos, planMaximo, mejoresPuentes, finesDeSemanaLargos, planificar,
+  diasLibresAlrededor, proximosFinesLargos, mejorPuente,
 } from '../publico/assets/js/fechas.js';
 import { fechaLarga, rango } from '../publico/assets/js/formato.js';
 import { crearICS } from '../publico/assets/js/ics.js';
@@ -127,6 +128,23 @@ test('planificar respeta el presupuesto en los tres estilos', () => {
     const rangos = r.viajes.map((v) => [aNum(v.desde), aNum(v.hasta)]);
     for (let i = 1; i < rangos.length; i += 1) assert.ok(rangos[i][0] > rangos[i - 1][1], `${estilo} sin traslapes`);
   }
+});
+
+test('días libres alrededor de una fecha', () => {
+  const fiestas = diasLibresAlrededor('2027-09-18');
+  assert.deepEqual([fiestas.desde, fiestas.hasta, fiestas.largo], ['2027-09-17', '2027-09-19', 3]);
+  assert.equal(diasLibresAlrededor('2026-10-21').largo, 0); // miércoles laboral
+  assert.equal(diasLibresAlrededor('2027-06-06', 'arica').hasta, '2027-06-07'); // lunes 7 de junio solo en Arica
+});
+
+test('próximos fines de semana largos y su mejor puente', () => {
+  const [primero, segundo] = proximosFinesLargos('2026-10-21');
+  assert.deepEqual([primero.desde, primero.hasta], ['2026-12-25', '2026-12-27']); // 31 oct + 1 nov son solo sábado y domingo
+  assert.equal(segundo.desde, '2027-01-01');
+  assert.equal(proximosFinesLargos('2026-12-26')[0].desde, '2026-12-25'); // uno en curso sigue apareciendo
+  const puente = mejorPuente('2026-12-25', '2026-12-27');
+  assert.deepEqual([puente.pedir, puente.largo], [['2026-12-24'], 4]);
+  assert.deepEqual(proximosFinesLargos('2030-01-01'), []);
 });
 
 test('textos en español', () => {

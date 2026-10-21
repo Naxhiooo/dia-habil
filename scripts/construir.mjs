@@ -7,6 +7,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import { FERIADOS, REGIONES, RANGO, REVISADO } from '../publico/assets/js/feriados.js';
 import {
   aNum, aISO, diaSemana, contarHabiles, construirDias, generarBloques, finesDeSemanaLargos, mejoresPuentes, describirBloque,
+  proximosFinesLargos,
 } from '../publico/assets/js/fechas.js';
 import { fechaLarga, fechaCorta, MESES, DIAS, DIAS_CORTOS, plural, hoyEnChile } from '../publico/assets/js/formato.js';
 import { crearICS } from '../publico/assets/js/ics.js';
@@ -80,7 +81,7 @@ async function cargarPlantillas() {
 const OG_POR_RUTA = { '/': 'inicio', '/plazos/': 'plazos', '/vacaciones/': 'vacaciones' };
 const seccionDe = (ruta) => {
   const primera = ruta.split('/')[1] || 'inicio';
-  return primera === 'fines-de-semana-largos' ? 'feriados' : primera;
+  return ['fines-de-semana-largos', 'proximo-fin-de-semana-largo', 'manana-es-feriado'].includes(primera) ? 'feriados' : primera;
 };
 
 function aplicarPlantilla(html, ruta, { og } = {}) {
@@ -238,7 +239,7 @@ ${ANIOS.map((a) => {
         <ul class="lista-simple" id="proximos">
 ${proximos.map((f) => `          <li data-fecha="${f.fecha}"><span><strong>${fechaCorta(f.fecha)}</strong> · ${esc(f.nombre)}</span><span class="etq">${f.fecha.slice(0, 4)}</span></li>`).join('\n')}
         </ul>
-        <p style="margin:14px 0 0"><a href="/fines-de-semana-largos/">Ver fines de semana largos →</a></p>
+        <p style="margin:14px 0 0;display:flex;flex-wrap:wrap;gap:var(--espacio-2) var(--espacio-5)"><a href="/manana-es-feriado/">¿Mañana es feriado? →</a><a href="/fines-de-semana-largos/">Fines de semana largos →</a></p>
       </div>
       <div class="resultado">
         ${tarjetaSuscripcion}
@@ -332,7 +333,7 @@ function paginasFinesLargos(hoy) {
     <section class="portada">
       <div class="antetitulo">Feriados · Chile</div>
       <h1>Fines de semana largos</h1>
-      ${siguiente ? `<p class="bajada">El próximo es del <strong>${esc(rangoLargo(siguiente.desde, siguiente.hasta))} de ${siguiente.hasta.slice(0, 4)}</strong>: ${siguiente.largo} días por ${esc(lista([...new Set(siguiente.feriados.map((f) => f.nombre))]))}.</p>` : ''}
+      ${siguiente ? `<p class="bajada">El próximo es del <strong>${esc(rangoLargo(siguiente.desde, siguiente.hasta))} de ${siguiente.hasta.slice(0, 4)}</strong>: ${siguiente.largo} días por ${esc(lista([...new Set(siguiente.feriados.map((f) => f.nombre))]))}. <a href="/proximo-fin-de-semana-largo/">¿Cuántos días faltan?</a></p>` : ''}
     </section>
     <section class="herramientas" aria-label="Fines de semana largos por año">
 ${ANIOS.map((a) => `      <a class="acceso" href="/fines-de-semana-largos/${a}/">
@@ -524,6 +525,123 @@ ${m.regionales.map((f) => `          <li><span class="punto" style="background:v
   return paginas;
 }
 
+// ---------- Respuestas del día: ¿mañana es feriado? y próximo fin de semana largo ----------
+// La respuesta depende de la fecha, así que la calcula el navegador (ui-hoy.js). El HTML trae
+// esqueletos de carga y listas con fechas absolutas, que siguen siendo útiles sin JavaScript.
+const selectorRegion = `<div class="campo" style="margin:var(--espacio-5) 0 0">
+          <label for="region">Incluir feriado regional</label>
+          <select id="region">
+            <option value="nacional">Solo feriados nacionales</option>
+            <option value="arica">Región de Arica y Parinacota</option>
+            <option value="chillan">Chillán y Chillán Viejo</option>
+          </select>
+        </div>`;
+
+const respuestaEsqueleto = (tipo) => `<div class="tarjeta" aria-live="polite" aria-busy="true" id="respuesta" data-tipo="${tipo}">
+        <span class="sr" data-carga>Revisando el calendario…</span>
+        <div class="respuesta">
+          <div class="hoja es-feriado esq esq-hoja" id="hoja" data-esq="esq esq-hoja"></div>
+          <div>
+            <p class="veredicto" id="veredicto"><span class="esq esq-cifra"></span></p>
+            <p class="titular" id="titular"><span class="esq esq-titulo"></span><span class="esq esq-titulo" style="width:55%"></span></p>
+          </div>
+        </div>
+        <ul class="datos-dia" id="datos">
+          <li><span class="esq esq-linea larga"></span></li>
+          <li><span class="esq esq-linea media"></span></li>
+          <li><span class="esq esq-linea larga"></span></li>
+        </ul>
+        ${selectorRegion}
+        <noscript><p class="aviso">Activa JavaScript para ver la respuesta de hoy. Mientras tanto, revisa la lista de esta página.</p></noscript>
+      </div>`;
+
+function paginasDelDia(hoy) {
+  const proximos = FERIADOS.filter((f) => f.alcance === 'nacional' && f.fecha > hoy).slice(0, 8);
+  const largos = proximosFinesLargos(hoy, 'nacional', 8);
+
+  const manana = documento({
+    ruta: '/manana-es-feriado/',
+    titulo: '¿Mañana es feriado en Chile? La respuesta del día | Día Hábil',
+    descripcion: '¿Mañana es feriado en Chile? Te lo decimos al instante, con el próximo feriado, si es irrenunciable y si viene fin de semana largo. Incluye feriados regionales.',
+    og: 'manana',
+    migas: [['Inicio', '/'], ['Feriados', '/feriados/'], ['¿Mañana es feriado?', '/manana-es-feriado/']],
+    cuerpo: `
+    <section class="portada">
+      <div class="antetitulo">Feriados · Chile</div>
+      <h1>¿Mañana es feriado?</h1>
+      <p class="bajada">La respuesta de hoy según los feriados legales de Chile, con el próximo feriado y si viene fin de semana largo.</p>
+    </section>
+
+    <section class="herramienta">
+      ${respuestaEsqueleto('manana')}
+      <div class="resultado">
+        <div class="tarjeta">
+          <h2 style="font-size:var(--texto-xl)">Próximos feriados</h2>
+          <ul class="lista-simple" id="proximos">
+${proximos.map((f) => `            <li data-fecha="${f.fecha}"><span><strong>${fechaCorta(f.fecha)} ${f.fecha.slice(0, 4)}</strong> · ${esc(f.nombre)}</span><span class="etq">${DIAS[diaSemana(aNum(f.fecha))]}</span></li>`).join('\n')}
+          </ul>
+          <p style="margin:14px 0 0"><a href="/proximo-fin-de-semana-largo/">¿Cuándo es el próximo fin de semana largo? →</a></p>
+        </div>
+        ${anuncio('lateral')}
+      </div>
+    </section>
+
+    <article class="contenido" style="margin-top:var(--espacio-seccion)">
+      <h2>¿Cómo saber si un día es feriado en Chile?</h2>
+      <p>Los feriados legales los fija la ley. Esta página usa la lista de la Biblioteca del Congreso Nacional para ${lista(ANIOS.map(String))}, y te avisa si el día es irrenunciable o parte de un fin de semana largo. Los domingos también son feriado, aunque no se listan.</p>
+      <h2>Preguntas frecuentes</h2>
+      <div class="preguntas">
+        <details><summary>¿Si un feriado cae en domingo se corre al lunes?</summary><p>No, por regla general se queda en su fecha. Solo se trasladan San Pedro y San Pablo y el Encuentro de Dos Mundos (Ley 19.668), y el Día de las Iglesias Evangélicas y Protestantes (Ley 20.299).</p></details>
+        <details><summary>¿Abre el comercio en feriado?</summary><p>Depende del feriado. En los irrenunciables (1 de enero, 1 de mayo, 18 y 19 de septiembre y 25 de diciembre) los trabajadores del comercio no pueden ser obligados a trabajar, salvo las excepciones de la Ley 19.973. En los demás, cada local decide.</p></details>
+        <details><summary>¿Hay feriados solo en algunas regiones?</summary><p>Sí: el 7 de junio en la Región de Arica y Parinacota y el 20 de agosto en Chillán y Chillán Viejo. Elígelos en "Incluir feriado regional".</p></details>
+      </div>
+      <p><a href="/feriados/">Ver todos los feriados →</a></p>
+    </article>
+
+    ${anuncio()}`,
+    scripts: '  <script type="module" src="/assets/js/ui-hoy.js"></script>',
+  });
+
+  const largo = documento({
+    ruta: '/proximo-fin-de-semana-largo/',
+    titulo: '¿Cuándo es el próximo fin de semana largo en Chile? | Día Hábil',
+    descripcion: 'El próximo fin de semana largo en Chile: fechas, cuántos días faltan, qué feriado lo forma y qué día pedir para alargarlo. Incluye feriados regionales.',
+    og: 'proximo-largo',
+    migas: [['Inicio', '/'], ['Fines de semana largos', '/fines-de-semana-largos/'], ['El próximo', '/proximo-fin-de-semana-largo/']],
+    cuerpo: `
+    <section class="portada">
+      <div class="antetitulo">Feriados · Chile</div>
+      <h1>¿Cuándo es el próximo fin de semana largo?</h1>
+      <p class="bajada">Las fechas, cuántos días faltan y qué día pedir para descansar todavía más.</p>
+    </section>
+
+    <section class="herramienta">
+      ${respuestaEsqueleto('largo')}
+      <div class="resultado">
+        <div class="tarjeta">
+          <h2 style="font-size:var(--texto-xl)">Los que vienen</h2>
+          <ul class="lista-simple" id="lista-largos">
+${largos.map((v) => `            <li data-hasta="${v.hasta}"><span><strong>${esc(mayuscula(rangoLargo(v.desde, v.hasta)))} ${v.hasta.slice(0, 4)}</strong><br><span class="detalle" style="font-size:.88rem">${esc(lista([...new Set(v.feriados.map((f) => f.nombre))]))}</span></span><span class="etq">${v.largo} días</span></li>`).join('\n')}
+          </ul>
+          <p style="margin:14px 0 0"><a href="/fines-de-semana-largos/">Todos los fines de semana largos →</a></p>
+        </div>
+        ${anuncio('lateral')}
+      </div>
+    </section>
+
+    <article class="contenido" style="margin-top:var(--espacio-seccion)">
+      <h2>¿Qué cuenta como fin de semana largo?</h2>
+      <p>Tres o más días libres seguidos sin pedir vacaciones: un feriado pegado a un sábado o a un domingo. Si el feriado cae martes o jueves, pedir el lunes o el viernes te deja cuatro días; esos "puentes" aparecen en la respuesta.</p>
+      <p>Para combinar tus días de vacaciones con todos los feriados del año, usa el <a href="/vacaciones/">optimizador de vacaciones</a>.</p>
+    </article>
+
+    ${anuncio()}`,
+    scripts: '  <script type="module" src="/assets/js/ui-hoy.js"></script>',
+  });
+
+  return [{ ruta: '/manana-es-feriado/', html: manana }, { ruta: '/proximo-fin-de-semana-largo/', html: largo }];
+}
+
 // ---------- Calendarios, sitemap y robots ----------
 function calendarios() {
   const salida = {};
@@ -567,7 +685,7 @@ export async function construir({ destino = join(RAIZ, 'dist'), hoy = hoyEnChile
     if (!/content="noindex"/.test(html) && ruta !== '/404.html') indexables.push(ruta);
   }
 
-  const generadas = [...paginasFeriados(hoy), ...paginasFinesLargos(hoy), ...paginasDiasHabiles(hoy)];
+  const generadas = [...paginasFeriados(hoy), ...paginasFinesLargos(hoy), ...paginasDiasHabiles(hoy), ...paginasDelDia(hoy)];
   for (const p of generadas) {
     const archivo = join(destino, ...p.ruta.split('/').filter(Boolean), 'index.html');
     await mkdir(dirname(archivo), { recursive: true });

@@ -195,6 +195,40 @@ export function finesDeSemanaLargos(bloques) {
     .sort((a, b) => a.ini - b.ini);
 }
 
+// Los días libres seguidos (sábados, domingos y feriados) que rodean a una fecha.
+// Si la fecha es un día laboral, el tramo queda vacío (largo 0).
+export function diasLibresAlrededor(fecha, region = 'nacional', margen = 10) {
+  const dias = construirDias(sumarDias(fecha, -margen), sumarDias(fecha, margen), region);
+  if (!dias[margen].libre) return { desde: fecha, hasta: fecha, largo: 0, feriados: [] };
+  let ini = margen;
+  let fin = margen;
+  while (ini > 0 && dias[ini - 1].libre) ini -= 1;
+  while (fin < dias.length - 1 && dias[fin + 1].libre) fin += 1;
+  return describirBloque({ ini, fin, costo: 0, largo: fin - ini + 1 }, dias);
+}
+
+// Los próximos fines de semana largos que aún no terminan, incluido uno en curso.
+export function proximosFinesLargos(hoy, region = 'nacional', limite = 6) {
+  const desde = sumarDias(hoy, -7) < RANGO.desde ? RANGO.desde : sumarDias(hoy, -7);
+  if (desde > RANGO.hasta) return [];
+  const dias = construirDias(desde, RANGO.hasta, region);
+  return finesDeSemanaLargos(generarBloques(dias, 0))
+    .map((b) => describirBloque(b, dias))
+    .filter((v) => v.hasta >= hoy)
+    .slice(0, limite);
+}
+
+// El mejor día para pedir y alargar un fin de semana largo (un solo día de vacaciones), si existe.
+export function mejorPuente(desde, hasta, region = 'nacional') {
+  const dias = construirDias(sumarDias(desde, -7), sumarDias(hasta, 7), region);
+  const ini = aNum(desde) - aNum(dias[0].iso);
+  const fin = aNum(hasta) - aNum(dias[0].iso);
+  const opciones = generarBloques(dias, 1)
+    .filter((b) => b.costo === 1 && b.ini <= ini && b.fin >= fin && b.largo > fin - ini + 1)
+    .sort((a, b) => b.largo - a.largo || a.ini - b.ini);
+  return opciones.length ? describirBloque(opciones[0], dias) : null;
+}
+
 // Puentes con mejor rendimiento: pocos días pedidos, muchos días libres, siempre con un feriado de por medio.
 export function mejoresPuentes(bloques, { maxCosto = 4, limite = 8 } = {}) {
   const candidatos = bloques

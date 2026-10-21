@@ -48,6 +48,8 @@ const tarjetas = {
   inicio: { color: C.cobre, mes: 'octubre', numero: 19, pie: 'lunes', titulo: ['Plazos, feriados y', 'vacaciones, sin vueltas.'], bajada: 'Con los feriados de Chile ya incluidos.' },
   plazos: { color: C.cobre, mes: 'vence el', numero: 19, pie: 'lunes', titulo: ['¿Hasta cuándo', 'tengo plazo?'], bajada: 'Calculadora de días hábiles para Chile.' },
   vacaciones: { color: C.lapis, mes: 'vacaciones', numero: 18, pie: 'días libres', titulo: ['Saca más días libres', 'con tus vacaciones'], bajada: 'Te decimos qué días pedir.' },
+  manana: { color: C.copihue, mes: 'mañana', numero: '¿Sí?', pie: '¿o no?', titulo: ['¿Mañana es', 'feriado?'], bajada: 'La respuesta del día, al instante.' },
+  'proximo-largo': { color: C.copihue, mes: 'fin de semana', numero: '3+', pie: 'días libres', titulo: ['El próximo fin', 'de semana largo'], bajada: 'Cuándo es y qué día pedir para alargarlo.' },
 };
 for (const anio of ANIOS) {
   const r = resumenAnio(anio);

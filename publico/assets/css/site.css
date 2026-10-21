@@ -243,7 +243,9 @@ input[type='number'] { font-family: var(--fuente-display); font-weight: var(--pe
 .heroe .hoja { --ancho: clamp(170px, 26vw, 230px); rotate: 2.5deg; }
 .proximo { display: flex; flex-direction: column; align-items: center; gap: var(--espacio-3); }
 .proximo p { margin: 0; text-align: center; max-width: 26ch; color: var(--color-texto-2); }
-.proximo .faltan { font-family: var(--fuente-display); font-weight: var(--peso-titulo); font-size: 1.35rem; color: var(--color-texto-1); }
+.proximo .enlaces-dia { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--espacio-2) var(--espacio-4); max-width: 30ch; font-size: var(--texto-s); }
+.proximo .enlaces-dia a { color: var(--color-marca); font-weight: var(--peso-fuerte); }
+.proximo .faltan {font-family: var(--fuente-display); font-weight: var(--peso-titulo); font-size: 1.35rem; color: var(--color-texto-1); }
 
 .herramientas { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr)); gap: var(--espacio-4); }
 .acceso { display: flex; flex-direction: column; gap: 10px; text-decoration: none; padding: var(--espacio-6); border-radius: var(--radio-l); background: var(--tarjeta-fondo); border: 1px solid var(--tarjeta-borde); box-shadow: var(--tarjeta-sombra); transition: transform var(--duracion-2) var(--curva-salida), border-color var(--duracion-2) var(--curva-salida); }
@@ -292,6 +294,16 @@ tr.siguiente td { background: var(--color-feriado-fondo); }
 .paginacion { display: flex; justify-content: space-between; gap: var(--espacio-3); margin-top: var(--espacio-seccion); font-weight: var(--peso-fuerte); }
 .paginacion a { color: var(--color-marca); text-decoration: none; }
 .paginacion a:hover { text-decoration: underline; }
+
+/* ---------- Respuestas del día ---------- */
+.veredicto { font-family: var(--fuente-display); font-weight: var(--peso-cifra); font-size: clamp(3rem, 10vw, 5rem); line-height: 1; margin: 0 0 var(--espacio-2); }
+.veredicto.si { color: var(--color-feriado); }
+.veredicto.no { color: var(--color-texto-1); }
+.veredicto .esq-cifra { font-size: inherit; }
+.datos-dia { list-style: none; padding: 0; margin: var(--espacio-5) 0 0; display: grid; gap: 0; }
+.datos-dia li { padding: var(--espacio-3) 0; border-top: 1px dashed var(--color-borde); color: var(--color-texto-2); }
+.datos-dia li strong { color: var(--color-texto-1); }
+.datos-dia a { color: var(--color-marca); font-weight: var(--peso-fuerte); }
 
 /* ---------- Texto de apoyo ---------- */
 .contenido { max-width: 72ch; }

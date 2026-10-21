@@ -1,4 +1,4 @@
-import { test } from 'node:test';
+﻿import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { mkdtemp, readFile, readdir, rm, stat } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
@@ -23,8 +23,8 @@ const htmls = (await archivos(destino)).filter((f) => f.endsWith('.html'));
 test.after(() => rm(destino, { recursive: true, force: true }));
 
 test('genera las páginas por año y por mes', () => {
-  assert.equal(resultado.generadas, 48);
-  assert.ok(resultado.paginas >= 53);
+  assert.equal(resultado.generadas, 50);
+  assert.ok(resultado.paginas >= 55);
 });
 
 test('no quedan marcas de plantilla sin reemplazar', async () => {

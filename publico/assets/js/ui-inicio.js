@@ -1,22 +1,11 @@
 import { FERIADOS, RANGO } from './feriados.js';
-import { aNum, calcularPlazo, construirDias, planificar, sumarDias } from './fechas.js';
+import { aNum, calcularPlazo, diasLibresAlrededor, planificar } from './fechas.js';
 import { fechaLarga, fechaCorta, rango, plural, hoyEnChile } from './formato.js';
 import { $, $$, pintarHoja, escaparHTML, marcarListo, alIniciar } from './ui-comun.js';
 
 const hoy = hoyEnChile();
 const nacionales = FERIADOS.filter((f) => f.alcance === 'nacional');
 const proximos = nacionales.filter((f) => f.fecha >= hoy);
-
-// Fin de semana largo: los días libres seguidos que rodean al feriado.
-function finDeSemanaLargo(fecha) {
-  const dias = construirDias(sumarDias(fecha, -4), sumarDias(fecha, 4));
-  const centro = 4;
-  let ini = centro;
-  let fin = centro;
-  while (ini > 0 && dias[ini - 1].libre) ini -= 1;
-  while (fin < dias.length - 1 && dias[fin + 1].libre) fin += 1;
-  return { desde: dias[ini].iso, hasta: dias[fin].iso, largo: fin - ini + 1 };
-}
 
 function dibujar() {
   const siguiente = proximos[0];
@@ -26,7 +15,7 @@ function dibujar() {
     const faltan = aNum(siguiente.fecha) - aNum(hoy);
     if (faltan === 0) $('#proximo-etiqueta').textContent = 'Hoy es feriado';
     $('#faltan').textContent = faltan === 0 ? siguiente.nombre : faltan === 1 ? 'Es mañana' : `Faltan ${faltan} días`;
-    const largo = finDeSemanaLargo(siguiente.fecha);
+    const largo = diasLibresAlrededor(siguiente.fecha);
     const extra = largo.largo >= 3 ? ` Fin de semana largo de ${largo.largo} días: ${rango(largo.desde, largo.hasta)}.` : '';
     $('#proximo-detalle').textContent = `${faltan === 0 ? '' : `${siguiente.nombre}.`}${extra}`.trim();
 
