@@ -14,6 +14,15 @@ import { crearICS } from '../publico/assets/js/ics.js';
 
 export const SITIO = 'https://diahabil.cl';
 const RAIZ = fileURLToPath(new URL('..', import.meta.url));
+
+// AdSense. Cada espacio de anuncio del sitio es "lateral" (junto a una herramienta) u "horizontal"
+// (entre secciones). Cuando AdSense entregue los bloques, se pega aquí su número "data-ad-slot".
+// Un espacio sin bloque no se publica; en el servidor local se ve como marcador para revisar el diseño.
+export const ADSENSE = {
+  cliente: 'ca-pub-3399052794035568',
+  bloques: { lateral: '', horizontal: '' },
+};
+let conMarcadores = false;
 const ANIOS = [];
 for (let a = +RANGO.desde.slice(0, 4); a <= +RANGO.hasta.slice(0, 4); a += 1) ANIOS.push(a);
 
@@ -95,6 +104,9 @@ function aplicarPlantilla(html, ruta, { og } = {}) {
     '  <meta property="og:image:width" content="1200">',
     '  <meta property="og:image:height" content="630">',
     '  <meta name="twitter:card" content="summary_large_image">',
+    // Sin anuncios en páginas de error ni internas (políticas de AdSense).
+    indexable && `  <meta name="google-adsense-account" content="${ADSENSE.cliente}">`,
+    indexable && `  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${ADSENSE.cliente}" crossorigin="anonymous"></script>`,
   ].filter(Boolean).join('\n');
   const seccion = seccionDe(ruta);
   const anioSiguiente = Math.min(ANIOS.at(-1), +hoyEnChile().slice(0, 4) + 1);
@@ -104,7 +116,14 @@ function aplicarPlantilla(html, ruta, { og } = {}) {
     .replace('  <!-- @head -->', plantillas.head.replace('{{metadatos}}', metadatos))
     .replace('<!-- @head -->', plantillas.head.replace('{{metadatos}}', metadatos))
     .replace('  <!-- @cabecera -->', cabecera)
-    .replace('  <!-- @pie -->', pie);
+    .replace('  <!-- @pie -->', pie)
+    .replace(/<aside class="anuncio( lateral)?" aria-label="Publicidad">Espacio reservado para un anuncio \(AdSense\)<\/aside>/g, (marcador, lateral) => {
+      const bloque = ADSENSE.bloques[lateral ? 'lateral' : 'horizontal'];
+      if (bloque && indexable) {
+        return `<aside class="anuncio activo${lateral || ''}" aria-label="Publicidad"><ins class="adsbygoogle" style="display:block" data-ad-client="${ADSENSE.cliente}" data-ad-slot="${bloque}" data-ad-format="auto" data-full-width-responsive="true"></ins><script>(adsbygoogle = window.adsbygoogle || []).push({});</script></aside>`;
+      }
+      return conMarcadores ? marcador : '';
+    });
 }
 
 function migasJsonLd(migas) {
@@ -671,7 +690,8 @@ async function archivosHtml(dir) {
   return salida;
 }
 
-export async function construir({ destino = join(RAIZ, 'dist'), hoy = hoyEnChile() } = {}) {
+export async function construir({ destino = join(RAIZ, 'dist'), hoy = hoyEnChile(), marcadores = false } = {}) {
+  conMarcadores = marcadores;
   await cargarPlantillas();
   await rm(destino, { recursive: true, force: true });
   await cp(join(RAIZ, 'publico'), destino, { recursive: true });
@@ -704,6 +724,8 @@ ${indexables.sort().map((r) => `  <url><loc>${SITIO}${r}</loc><lastmod>${REVISAD
 `;
   await writeFile(join(destino, 'sitemap.xml'), sitemap);
   await writeFile(join(destino, 'robots.txt'), `User-agent: *\nAllow: /\n\nSitemap: ${SITIO}/sitemap.xml\n`);
+  // Autoriza a Google a vender anuncios en el sitio (https://support.google.com/adsense/answer/12171612).
+  await writeFile(join(destino, 'ads.txt'), `google.com, ${ADSENSE.cliente.replace('ca-', '')}, DIRECT, f08c47fec0942fa0\n`);
   return { destino, paginas: indexables.length, generadas: generadas.length };
 }
 

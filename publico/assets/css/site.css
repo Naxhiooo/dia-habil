@@ -321,6 +321,8 @@ tr.siguiente td { background: var(--color-feriado-fondo); }
 .anuncio { margin: clamp(24px, 4vw, 40px) auto; min-height: 110px; border: 1.5px dashed var(--anuncio-borde); border-radius: 12px; display: grid; place-items: center; color: var(--anuncio-texto); font-size: 0.85rem; text-align: center; padding: var(--espacio-3); background: var(--anuncio-fondo); }
 .anuncio::before { content: 'Anuncio'; display: block; font-size: 0.7rem; letter-spacing: 0.14em; text-transform: uppercase; margin-bottom: var(--espacio-1); }
 .anuncio.lateral { min-height: 250px; margin: 18px 0 0; }
+.anuncio.activo { display: block; border: 0; background: none; padding: 0; text-align: left; }
+.anuncio.activo::before { margin-bottom: var(--espacio-2); }
 
 /* ---------- Esqueletos de carga ---------- */
 .esq {

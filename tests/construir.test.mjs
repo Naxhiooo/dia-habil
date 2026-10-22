@@ -71,6 +71,16 @@ test('cifras clave de las páginas generadas', async () => {
   assert.match(dic, /tiene <strong>21 días hábiles de lunes a viernes<\/strong>/);
 });
 
+test('AdSense: verificación, ads.txt y sin marcadores en producción', async () => {
+  assert.equal(await leer('/ads.txt'), 'google.com, pub-3399052794035568, DIRECT, f08c47fec0942fa0\n');
+  const inicio = await leer('/index.html');
+  assert.match(inicio, /<meta name="google-adsense-account" content="ca-pub-3399052794035568">/);
+  assert.match(inicio, /adsbygoogle\.js\?client=ca-pub-3399052794035568/);
+  assert.doesNotMatch(await leer('/404.html'), /adsbygoogle/);
+  assert.doesNotMatch(await leer('/estilos/index.html'), /adsbygoogle/);
+  for (const f of htmls) assert.doesNotMatch(await readFile(f, 'utf8'), /Espacio reservado para un anuncio/, relative(destino, f));
+});
+
 test('robots y calendarios', async () => {
   assert.match(await leer('/robots.txt'), /Sitemap: https:\/\/diahabil\.cl\/sitemap\.xml/);
   const ics = await leer('/calendarios/feriados-chile.ics');

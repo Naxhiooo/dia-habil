@@ -30,7 +30,7 @@ const TIPOS = {
 async function reconstruir(motivo) {
   const inicio = Date.now();
   try {
-    const r = await construir();
+    const r = await construir({ marcadores: true });
     console.log(`${motivo}: ${r.paginas} páginas en ${Date.now() - inicio} ms`);
   } catch (error) {
     console.error(`Error al construir: ${error.message}`);
