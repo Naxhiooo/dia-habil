@@ -81,6 +81,15 @@ test('AdSense: verificación, ads.txt y sin marcadores en producción', async ()
   for (const f of htmls) assert.doesNotMatch(await readFile(f, 'utf8'), /Espacio reservado para un anuncio/, relative(destino, f));
 });
 
+test('los correos quedan fuera de la ofuscación de Cloudflare (evita 404 en /cdn-cgi)', async () => {
+  for (const f of htmls) {
+    const html = await readFile(f, 'utf8');
+    for (const [enlace] of html.matchAll(/<a href="mailto:[^>]*>[^<]*<\/a>/g)) {
+      assert.ok(html.includes(`<!--email_off-->${enlace}<!--/email_off-->`), `${relative(destino, f)}: ${enlace}`);
+    }
+  }
+});
+
 test('robots y calendarios', async () => {
   assert.match(await leer('/robots.txt'), /Sitemap: https:\/\/diahabil\.cl\/sitemap\.xml/);
   const ics = await leer('/calendarios/feriados-chile.ics');
