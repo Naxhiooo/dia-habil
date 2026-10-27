@@ -1,0 +1,26 @@
+name: Publicación diaria
+
+# Las listas de próximos feriados y fines de semana largos quedan escritas en el HTML
+# el día del build. Este flujo pide a Cloudflare Pages reconstruir el sitio cada madrugada
+# para que amanezcan al día. El build calcula la fecha con la hora de Chile.
+on:
+  schedule:
+    - cron: '17 4 * * *' # 01:17 en Chile con horario de verano, 00:17 en invierno
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  publicar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Pedir a Cloudflare Pages un nuevo despliegue
+        env:
+          DEPLOY_HOOK: ${{ secrets.CLOUDFLARE_DEPLOY_HOOK }}
+        run: |
+          if [ -z "$DEPLOY_HOOK" ]; then
+            echo "::error::Falta el secreto CLOUDFLARE_DEPLOY_HOOK (Settings → Secrets and variables → Actions)."
+            exit 1
+          fi
+          curl --fail --silent --show-error --retry 3 --retry-all-errors --request POST "$DEPLOY_HOOK"

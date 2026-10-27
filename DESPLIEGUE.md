@@ -9,6 +9,7 @@
 | `scripts/construir.mjs` | Construye el sitio en `dist/`: aplica las plantillas y genera las páginas de feriados, fines de semana largos y días hábiles, los calendarios `.ics`, el `sitemap.xml` y el `robots.txt`. |
 | `scripts/imagenes.mjs` | Genera las imágenes de vista previa (`assets/img/og/`) y los íconos PNG. Se corre a mano. |
 | `recursos/` | Archivos de trabajo que no se publican (fuentes TTF para las imágenes). |
+| `.github/workflows/` | Publicación diaria automática (ver paso 12). |
 | `dist/` | Sitio listo para publicar. Se genera; no se edita ni se sube a Git. |
 
 ## Comandos
@@ -38,8 +39,12 @@ npm run imagenes     # regenera imágenes de vista previa e íconos
 9. **Correo.** Correo electrónico → Enrutamiento: crea `contacto@diahabil.cl` y reenvíalo a tu correo personal.
 10. **Estadísticas.** En el proyecto de Pages → Métricas → activa Web Analytics (sin cookies, ya declarado en la política de privacidad).
 11. **IndexNow.** Almacenamiento en caché → Configuración → activa "Crawler Hints", que avisa a Bing de cada cambio.
+12. **Publicación diaria.** Las listas de próximos feriados y fines de semana largos se escriben en el HTML al construir, así que el sitio se reconstruye cada madrugada (01:17 en verano, 00:17 en invierno):
+    - En el proyecto de Pages → Settings → Builds → Add deploy hook: nombre `publicacion-diaria`, rama `main`. Copia la URL que aparece; quien la tenga puede publicar el sitio, así que no la compartas.
+    - En GitHub, en el repositorio → Settings → Secrets and variables → Actions → New repository secret, con nombre `CLOUDFLARE_DEPLOY_HOOK` y la URL como valor.
+    - Para probarlo: Actions → Publicación diaria → Run workflow. En Pages debe aparecer un despliegue nuevo.
 
-Cada `git push` a la rama principal publica el sitio solo.
+Cada `git push` a la rama principal publica el sitio solo, y además se publica una vez al día.
 
 ## Fase 2: buscadores
 
@@ -52,7 +57,7 @@ Cada `git push` a la rama principal publica el sitio solo.
 
 - **Cambia un feriado o se agrega uno:** edita `publico/assets/js/feriados.js`, actualiza `REVISADO`, corre `npm test` y publica. Los calendarios, páginas y sitemap se regeneran solos.
 - **Agregar 2029:** suma sus feriados en `feriados.js`, extiende `RANGO.hasta` y corre `npm run imagenes`.
-- **Una vez al mes:** vuelve a publicar (o configura un despliegue programado) para que las listas de "próximos feriados" del HTML queden al día; el navegador igual las corrige con JavaScript.
+- **Publicación diaria:** la hace sola el flujo de GitHub Actions del paso 12. Si GitHub avisa por correo que lo desactivó (pasa tras 60 días sin cambios en el repositorio), reactívalo en Actions → Publicación diaria → Enable workflow.
 
 ## Antes de pedir AdSense
 
