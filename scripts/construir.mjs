@@ -268,9 +268,9 @@ ${proximos.map((f) => `          <li data-fecha="${f.fecha}"><span><strong>${fec
 
     <article class="contenido" style="margin-top:var(--espacio-seccion)">
       <h2>¿Qué es un feriado irrenunciable?</h2>
-      <p>En los feriados irrenunciables (1 de enero, 1 de mayo, 18 y 19 de septiembre y 25 de diciembre) los trabajadores del comercio no pueden ser obligados a trabajar, salvo las excepciones que fija la propia ley (Ley 19.973).</p>
+      <p>En los feriados irrenunciables (1 de enero, 1 de mayo, 18 y 19 de septiembre y 25 de diciembre) los trabajadores del comercio no pueden trabajar, ni aunque quieran, salvo en los rubros que exceptúa la propia ley (Ley 19.973). <a href="/guias/feriados-irrenunciables/">Guía de feriados irrenunciables →</a></p>
       <h2>Feriados que se mueven al lunes</h2>
-      <p>San Pedro y San Pablo (29 de junio) y el Encuentro de Dos Mundos (12 de octubre) se trasladan al lunes de esa semana si caen martes, miércoles o jueves, y al lunes siguiente si caen viernes (Ley 19.668). El Día de las Iglesias Evangélicas y Protestantes (31 de octubre) pasa al viernes anterior si cae martes y al viernes siguiente si cae miércoles (Ley 20.299).</p>
+      <p>San Pedro y San Pablo (29 de junio) y el Encuentro de Dos Mundos (12 de octubre) se trasladan al lunes de esa semana si caen martes, miércoles o jueves, y al lunes siguiente si caen viernes (Ley 19.668). El Día de las Iglesias Evangélicas y Protestantes (31 de octubre) pasa al viernes anterior si cae martes y al viernes siguiente si cae miércoles (Ley 20.299). <a href="/guias/feriados-que-se-mueven/">Guía de feriados que se mueven →</a></p>
       <h2>Feriados regionales</h2>
       <p>El 7 de junio es feriado en la Región de Arica y Parinacota (Asalto y Toma del Morro de Arica, Ley 20.663) y el 20 de agosto en las comunas de Chillán y Chillán Viejo (Nacimiento del Prócer de la Independencia, Ley 20.768).</p>
     </article>
@@ -324,6 +324,7 @@ ${largos.slice(0, 6).map((v) => `          <li><span>${esc(mayuscula(rangoLargo(
         <h2 style="font-size:var(--texto-xl);margin-top:0">Preguntas sobre ${anio}</h2>
         <p><strong>¿Cuántos feriados tiene ${anio}?</strong> ${nac.length} feriados nacionales, sin contar los domingos. ${finde.length ? `De ellos, ${lista(finde.map((f) => `${f.nombre} (${DIAS[diaSemana(aNum(f.fecha))]})`))} ${finde.length === 1 ? 'cae' : 'caen'} en fin de semana.` : ''}</p>
         <p><strong>¿Hay feriados regionales?</strong> Sí: el ${fechaLarga(delAnio(anio).find((f) => f.alcance === 'arica').fecha, { conAnio: false })} en Arica y Parinacota, y el ${fechaLarga(delAnio(anio).find((f) => f.alcance === 'chillan').fecha, { conAnio: false })} en Chillán y Chillán Viejo.</p>
+        <p><a href="/guias/feriados-que-se-mueven/">Por qué algunos feriados cambian de día →</a></p>
         <p style="margin:0"><a href="/dias-habiles/${anio}/">Días hábiles de ${anio}, mes a mes →</a></p>
       </div>
     </section>

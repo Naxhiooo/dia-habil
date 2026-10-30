@@ -90,6 +90,21 @@ test('los correos quedan fuera de la ofuscación de Cloudflare (evita 404 en /cd
   }
 });
 
+test('las guías tienen contenido propio y están enlazadas desde el inicio', async () => {
+  const sitemap = await leer('/sitemap.xml');
+  const inicio = await leer('/index.html');
+  for (const guia of ['dias-habiles', 'vacaciones-legales', 'feriados-irrenunciables', 'feriados-que-se-mueven']) {
+    const html = await leer(`/guias/${guia}/index.html`);
+    const texto = html.match(/<main[\s\S]*?<\/main>/)[0].replace(/<[^>]+>/g, ' ');
+    const palabras = texto.split(/\s+/).filter((p) => /\p{L}/u.test(p)).length;
+    assert.ok(palabras >= 800, `${guia}: ${palabras} palabras`);
+    assert.ok(sitemap.includes(`<loc>${SITIO}/guias/${guia}/</loc>`), guia);
+    assert.ok(inicio.includes(`href="/guias/${guia}/"`), guia);
+  }
+  assert.match(await leer('/quienes-somos/index.html'), /<h1>Quiénes somos<\/h1>/);
+  assert.match(await leer('/index.html'), /<a href="\/guias\/" data-seccion="guias">Guías<\/a>/);
+});
+
 test('robots y calendarios', async () => {
   assert.match(await leer('/robots.txt'), /Sitemap: https:\/\/diahabil\.cl\/sitemap\.xml/);
   const ics = await leer('/calendarios/feriados-chile.ics');
