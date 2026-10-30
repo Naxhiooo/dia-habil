@@ -318,7 +318,8 @@ tr.siguiente td { background: var(--color-feriado-fondo); }
 .preguntas details p { margin: 10px 0 0; color: var(--color-texto-2); }
 
 /* ---------- Guías ---------- */
-.herramientas.dos { grid-template-columns: repeat(auto-fit, minmax(min(340px, 100%), 1fr)); }
+.herramientas.dos { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+@media (max-width: 760px) { .herramientas.dos { grid-template-columns: 1fr; } }
 .herramientas.cuatro { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 @media (max-width: 1000px) { .herramientas.cuatro { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 560px) { .herramientas.cuatro { grid-template-columns: 1fr; } }
