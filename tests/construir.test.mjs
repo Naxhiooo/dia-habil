@@ -105,6 +105,22 @@ test('las guías tienen contenido propio y están enlazadas desde el inicio', as
   assert.match(await leer('/index.html'), /<a href="\/guias\/" data-seccion="guias">Guías<\/a>/);
 });
 
+test('CSS y JS se piden con la versión de su contenido (Cloudflare no renueva su copia al publicar)', async () => {
+  const [, version] = (await leer('/index.html')).match(/href="\/assets\/css\/site\.css\?v=([0-9a-f]{10})"/);
+  for (const f of htmls) {
+    const html = await readFile(f, 'utf8');
+    for (const [, url] of html.matchAll(/(?:href|src)="(\/assets\/(?:css|js)\/[^"]+)"/g)) {
+      assert.ok(url.endsWith(`?v=${version}`), `${relative(destino, f)}: ${url}`);
+    }
+  }
+  for (const nombre of await readdir(join(destino, 'assets', 'js'))) {
+    const codigo = await leer(`/assets/js/${nombre}`);
+    for (const [, modulo] of codigo.matchAll(/from '([^']+)'/g)) {
+      assert.ok(modulo.endsWith(`.js?v=${version}`), `${nombre}: ${modulo}`);
+    }
+  }
+});
+
 test('robots y calendarios', async () => {
   assert.match(await leer('/robots.txt'), /Sitemap: https:\/\/diahabil\.cl\/sitemap\.xml/);
   const ics = await leer('/calendarios/feriados-chile.ics');

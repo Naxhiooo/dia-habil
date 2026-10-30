@@ -1,6 +1,7 @@
 // Construye el sitio en dist/: copia publico/, completa cabecera, pie y metadatos de cada página,
 // genera las páginas de feriados, fines de semana largos y días hábiles, los calendarios .ics,
 // el sitemap y el robots.txt. Uso: npm run construir
+import { createHash } from 'node:crypto';
 import { cp, mkdir, readFile, readdir, rm, writeFile } from 'node:fs/promises';
 import { dirname, join, relative, sep } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
@@ -87,6 +88,18 @@ async function cargarPlantillas() {
   plantillas = { head: await leer('head.html'), cabecera: await leer('cabecera.html'), pie: await leer('pie.html') };
 }
 
+// Cloudflare guarda CSS y JS un día (ver _headers) y publicar no renueva su copia. Las páginas los piden
+// con una versión que cambia con su contenido, así lo nuevo llega de inmediato a todos los visitantes.
+let versionRecursos;
+async function calcularVersionRecursos() {
+  const huella = createHash('sha256');
+  for (const carpeta of ['css', 'js']) {
+    const dir = join(RAIZ, 'publico', 'assets', carpeta);
+    for (const nombre of (await readdir(dir)).sort()) huella.update(await readFile(join(dir, nombre)));
+  }
+  return huella.digest('hex').slice(0, 10);
+}
+
 const OG_POR_RUTA = { '/': 'inicio', '/plazos/': 'plazos', '/vacaciones/': 'vacaciones' };
 const seccionDe = (ruta) => {
   const primera = ruta.split('/')[1] || 'inicio';
@@ -123,7 +136,8 @@ function aplicarPlantilla(html, ruta, { og } = {}) {
         return `<aside class="anuncio activo${lateral || ''}" aria-label="Publicidad"><ins class="adsbygoogle" style="display:block" data-ad-client="${ADSENSE.cliente}" data-ad-slot="${bloque}" data-ad-format="auto" data-full-width-responsive="true"></ins><script>(adsbygoogle = window.adsbygoogle || []).push({});</script></aside>`;
       }
       return conMarcadores ? marcador : '';
-    });
+    })
+    .replace(/((?:href|src)="\/assets\/(?:css|js)\/[^"?]+)"/g, `$1?v=${versionRecursos}"`);
 }
 
 function migasJsonLd(migas) {
@@ -694,8 +708,16 @@ async function archivosHtml(dir) {
 export async function construir({ destino = join(RAIZ, 'dist'), hoy = hoyEnChile(), marcadores = false } = {}) {
   conMarcadores = marcadores;
   await cargarPlantillas();
+  versionRecursos = await calcularVersionRecursos();
   await rm(destino, { recursive: true, force: true });
   await cp(join(RAIZ, 'publico'), destino, { recursive: true });
+
+  // Los módulos se importan entre sí con la misma versión; sin ella, un import traería la copia antigua.
+  const modulos = join(destino, 'assets', 'js');
+  for (const nombre of await readdir(modulos)) {
+    const archivo = join(modulos, nombre);
+    await writeFile(archivo, (await readFile(archivo, 'utf8')).replace(/from '(\.\/[^']+\.js)'/g, `from '$1?v=${versionRecursos}'`));
+  }
 
   const indexables = [];
   for (const archivo of await archivosHtml(destino)) {

@@ -58,6 +58,7 @@ Cada `git push` a la rama principal publica el sitio solo, y además se publica 
 - **Cambia un feriado o se agrega uno:** edita `publico/assets/js/feriados.js`, actualiza `REVISADO`, corre `npm test` y publica. Los calendarios, páginas y sitemap se regeneran solos.
 - **Agregar 2029:** suma sus feriados en `feriados.js`, extiende `RANGO.hasta` y corre `npm run imagenes`.
 - **Publicación diaria:** la hace sola el flujo de GitHub Actions del paso 12. Si GitHub avisa por correo que lo desactivó (pasa tras 60 días sin cambios en el repositorio), reactívalo en Actions → Publicación diaria → Enable workflow.
+- **Caché de CSS y JS:** Cloudflare los guarda un día y publicar no renueva esa copia. Por eso el build les agrega `?v=` con una huella de su contenido: cada cambio llega de inmediato y no hay que purgar nada. Las imágenes no llevan versión; si cambias una, puede tardar hasta un día en verse.
 
 ## Antes de pedir AdSense
 
