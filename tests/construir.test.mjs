@@ -195,6 +195,13 @@ test('cada mes tiene contenido propio, sin datos inventados', async () => {
   assert.doesNotMatch(diciembre2028, /ene<\/td>/);
 });
 
+test('Fuentes y método enlaza la ley de cada feriado y ninguna página cita a feriados.cl', async () => {
+  const acerca = await leer('/acerca/index.html');
+  const enlazadas = [...acerca.matchAll(/<a href="https:\/\/www\.bcn\.cl\/leychile\/navegar\?idNorma=\d+" rel="noopener">([^<]+)<\/a>/g)].map((m) => m[1]);
+  for (const ley of new Set(FERIADOS.flatMap((f) => f.ley.split(', ')))) assert.ok(enlazadas.includes(ley), `falta ${ley}`);
+  for (const f of htmls) assert.ok(!(await readFile(f, 'utf8')).includes('feriados.cl'), relative(destino, f));
+});
+
 test('robots y calendarios', async () => {
   assert.match(await leer('/robots.txt'), /Sitemap: https:\/\/diahabil\.cl\/sitemap\.xml/);
   const ics = await leer('/calendarios/feriados-chile.ics');

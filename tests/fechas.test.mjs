@@ -18,7 +18,22 @@ test('conversión de fechas y día de la semana', () => {
   assert.equal(dow('2028-02-29'), 2); // martes, año bisiesto
 });
 
-test('los feriados trasladables cumplen la Ley 19.668 y la Ley 20.299', () => {
+test('cada feriado de la lista sale de la regla de su ley', () => {
+  const dia = (anio, mes, numero) => `${anio}-${String(mes).padStart(2, '0')}-${String(numero).padStart(2, '0')}`;
+  // Domingo de Pascua en el calendario gregoriano (algoritmo de Meeus, Jones y Butcher).
+  const pascua = (anio) => {
+    const a = anio % 19;
+    const b = Math.floor(anio / 100);
+    const c = anio % 100;
+    const g = Math.floor((b - Math.floor((b + 8) / 25) + 1) / 3);
+    const h = (19 * a + b - Math.floor(b / 4) - g + 15) % 30;
+    const l = (32 + 2 * (b % 4) + 2 * Math.floor(c / 4) - h - (c % 4)) % 7;
+    const m = Math.floor((a + 11 * h + 22 * l) / 451);
+    const n = h + l - 7 * m + 114;
+    return aNum(dia(anio, Math.floor(n / 31), n % 31 + 1));
+  };
+  // Ley 21.357: solsticio de junio en hora de Chile, según el Observatorio Naval de Estados Unidos.
+  const SOLSTICIO = { 2026: '2026-06-21', 2027: '2027-06-21', 2028: '2028-06-20' };
   // Ley 19.668: martes, miércoles o jueves → lunes de esa semana; viernes → lunes siguiente.
   const traslado19668 = (base) => {
     const n = aNum(base);
@@ -35,12 +50,53 @@ test('los feriados trasladables cumplen la Ley 19.668 y la Ley 20.299', () => {
     if (d === 3) return aISO(n + 2);
     return base;
   };
-  for (const anio of [2026, 2027, 2028]) {
-    const fechas = FERIADOS.filter((f) => f.fecha.startsWith(String(anio)));
-    const buscar = (nombre) => fechas.find((f) => f.nombre === nombre).fecha;
-    assert.equal(buscar('San Pedro y San Pablo'), traslado19668(`${anio}-06-29`), `San Pedro ${anio}`);
-    assert.equal(buscar('Encuentro de Dos Mundos'), traslado19668(`${anio}-10-12`), `Encuentro ${anio}`);
-    assert.equal(buscar('Día de las Iglesias Evangélicas y Protestantes'), traslado20299(`${anio}-10-31`), `Iglesias ${anio}`);
+  const esperados = (anio) => {
+    const lista = [
+      [dia(anio, 1, 1), 'Año Nuevo'],
+      [aISO(pascua(anio) - 2), 'Viernes Santo'],
+      [aISO(pascua(anio) - 1), 'Sábado Santo'],
+      [dia(anio, 5, 1), 'Día Nacional del Trabajo'],
+      [dia(anio, 5, 21), 'Día de las Glorias Navales'],
+      [dia(anio, 6, 7), 'Asalto y Toma del Morro de Arica'],
+      [SOLSTICIO[anio], 'Día Nacional de los Pueblos Indígenas'],
+      [traslado19668(dia(anio, 6, 29)), 'San Pedro y San Pablo'],
+      [dia(anio, 7, 16), 'Día de la Virgen del Carmen'],
+      [dia(anio, 8, 15), 'Asunción de la Virgen'],
+      [dia(anio, 8, 20), 'Nacimiento del Prócer de la Independencia'],
+      [dia(anio, 9, 18), 'Independencia Nacional'],
+      [dia(anio, 9, 19), 'Día de las Glorias del Ejército'],
+      [traslado19668(dia(anio, 10, 12)), 'Encuentro de Dos Mundos'],
+      [traslado20299(dia(anio, 10, 31)), 'Día de las Iglesias Evangélicas y Protestantes'],
+      [dia(anio, 11, 1), 'Día de Todos los Santos'],
+      [dia(anio, 12, 8), 'Inmaculada Concepción'],
+      [dia(anio, 12, 25), 'Navidad'],
+    ];
+    const dia18 = dow(dia(anio, 9, 18));
+    // Ley 20.983: viernes 17 si el 18 y el 19 caen en fin de semana; lunes 2 si el 1 de enero cae domingo.
+    if (dia18 === 6) lista.push([dia(anio, 9, 17), 'Feriado adicional de Fiestas Patrias']);
+    if (dow(dia(anio, 1, 1)) === 0) lista.push([dia(anio, 1, 2), 'Feriado adicional de Año Nuevo']);
+    // Código del Trabajo, art. 35 ter: lunes 17 si el 18 cae martes; viernes 20 si cae miércoles.
+    if (dia18 === 2) lista.push([dia(anio, 9, 17), 'Feriado adicional de Fiestas Patrias']);
+    if (dia18 === 3) lista.push([dia(anio, 9, 20), 'Feriado adicional de Fiestas Patrias']);
+    // Ley 18.695, art. 106: elección el último domingo de octubre. Ley 20.640, art. 3: primarias el vigésimo domingo anterior.
+    if (anio % 4 === 0) {
+      const eleccion = aNum(dia(anio, 10, 31)) - dow(dia(anio, 10, 31));
+      lista.push([aISO(eleccion), 'Elecciones de gobernadores, consejeros, alcaldes y concejales']);
+      lista.push([aISO(eleccion - 20 * 7), 'Elecciones primarias (gobernadores y alcaldes)']);
+    }
+    return lista.sort();
+  };
+  for (const anio of new Set(FERIADOS.map((f) => +f.fecha.slice(0, 4)))) {
+    const lista = FERIADOS.filter((f) => f.fecha.startsWith(String(anio))).map((f) => [f.fecha, f.nombre]);
+    assert.deepEqual(lista.sort(), esperados(anio), `Feriados de ${anio}`);
+  }
+  // Ley 19.973, art. 2, y Ley 20.629.
+  const IRRENUNCIABLES = ['Año Nuevo', 'Día Nacional del Trabajo', 'Independencia Nacional', 'Día de las Glorias del Ejército', 'Navidad'];
+  // Ley 20.663 y Ley 20.768.
+  const REGIONALES = { 'Asalto y Toma del Morro de Arica': 'arica', 'Nacimiento del Prócer de la Independencia': 'chillan' };
+  for (const f of FERIADOS) {
+    assert.equal(f.irrenunciable, IRRENUNCIABLES.includes(f.nombre), `Irrenunciable: ${f.nombre}`);
+    assert.equal(f.alcance, REGIONALES[f.nombre] ?? 'nacional', `Alcance: ${f.nombre}`);
   }
 });
 

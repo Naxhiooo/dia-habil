@@ -2,7 +2,7 @@
 // Lo propio de cada año (qué día cae, si se traslada, qué descuenta) lo calcula construir.mjs.
 const IRRENUNCIABLE = 'Es <a href="/guias/feriados-irrenunciables/">irrenunciable</a>: los trabajadores del comercio no pueden trabajar ese día, salvo en los rubros que exceptúa la Ley 19.973.';
 const FECHA_FIJA = 'Tiene fecha fija y no se traslada aunque caiga en fin de semana.';
-const ELECCION = 'El día de votación es feriado legal (Ley 18.700, art. 169) e <a href="/guias/feriados-irrenunciables/">irrenunciable</a> para quienes trabajan en malls y otros centros comerciales administrados por una misma empresa, en las comunas donde se vota.';
+const ELECCION = 'El día de votación es feriado legal (Ley 18.700, art. 180) e<a href="/guias/feriados-irrenunciables/">irrenunciable</a> para quienes trabajan en malls y otros centros comerciales administrados por una misma empresa, en las comunas donde se vota.';
 
 export const NOTAS_FERIADO = {
   'Año Nuevo': `${IRRENUNCIABLE} Si cae domingo, el lunes 2 de enero también es feriado (Ley 20.983).`,
@@ -14,7 +14,7 @@ export const NOTAS_FERIADO = {
   'Día Nacional de los Pueblos Indígenas': 'Es feriado desde 2021 y se celebra el día del solsticio de invierno, que cae el 20 o el 21 de junio (Ley 21.357).',
   'San Pedro y San Pablo': 'La Ley 19.668 lo pasa a lunes: si el 29 de junio cae de martes a jueves, se celebra el lunes de esa semana, y si cae viernes, el lunes siguiente.',
   'Día de la Virgen del Carmen': `Celebra a la patrona de Chile y es feriado por la Ley 20.148. ${FECHA_FIJA}`,
-  'Elecciones primarias (gobernadores, alcaldes y concejales)': `${ELECCION} Las primarias se hacen solo si los partidos las convocan.`,
+  'Elecciones primarias (gobernadores y alcaldes)': `${ELECCION} Las primarias se hacen solo si los partidos las convocan, el vigésimo domingo antes de la elección (Ley 20.640, art. 3).`,
   'Asunción de la Virgen': FECHA_FIJA,
   'Nacimiento del Prócer de la Independencia': "Es feriado solo en Chillán y Chillán Viejo, por el nacimiento de Bernardo O'Higgins (Ley 20.768).",
   'Feriado adicional de Fiestas Patrias': 'Es feriado porque el 18 y el 19 de septiembre caen sábado y domingo (Ley 20.983). No es irrenunciable, así que el comercio puede abrir.',

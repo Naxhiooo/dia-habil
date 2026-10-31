@@ -127,12 +127,13 @@ function aplicarPlantilla(html, ruta, { og } = {}) {
   const seccion = seccionDe(ruta);
   const anioSiguiente = Math.min(ANIOS.at(-1), +hoyEnChile().slice(0, 4) + 1);
   const cabecera = plantillas.cabecera.replace(`data-seccion="${seccion}"`, `data-seccion="${seccion}" aria-current="page"`);
-  const pie = plantillas.pie.replaceAll('{{revisado}}', fechaLarga(REVISADO).replace(/^\S+ /, '')).replaceAll('{{anioSiguiente}}', anioSiguiente);
+  const pie = plantillas.pie.replaceAll('{{anioSiguiente}}', anioSiguiente);
   return html
     .replace('  <!-- @head -->', plantillas.head.replace('{{metadatos}}', metadatos))
     .replace('<!-- @head -->', plantillas.head.replace('{{metadatos}}', metadatos))
     .replace('  <!-- @cabecera -->', cabecera)
     .replace('  <!-- @pie -->', pie)
+    .replaceAll('{{revisado}}', fechaLarga(REVISADO).replace(/^\S+ /, ''))
     .replace(/<aside class="anuncio( lateral)?" aria-label="Publicidad">Espacio reservado para un anuncio \(AdSense\)<\/aside>/g, (marcador, lateral) => {
       const bloque = ADSENSE.bloques[lateral ? 'lateral' : 'horizontal'];
       if (bloque && indexable) {
@@ -852,7 +853,7 @@ ${proximos.map((f) => `            <li data-fecha="${f.fecha}"><span><strong>${f
 
     <article class="contenido" style="margin-top:var(--espacio-seccion)">
       <h2>¿Cómo saber si un día es feriado en Chile?</h2>
-      <p>Los feriados legales los fija la ley. Esta página usa la lista de la Biblioteca del Congreso Nacional para ${lista(ANIOS.map(String))}, y te avisa si el día es irrenunciable o parte de un fin de semana largo. Los domingos también son feriado, aunque no se listan.</p>
+      <p>Los feriados legales los fija la ley. Esta página usa el texto de esas leyes, publicado en la Biblioteca del Congreso Nacional, para ${lista(ANIOS.map(String))}, y te avisa si el día es irrenunciable o parte de un fin de semana largo. Los domingos también son feriado, aunque no se listan.</p>
       <h2>Preguntas frecuentes</h2>
       <div class="preguntas">
         <details><summary>¿Si un feriado cae en domingo se corre al lunes?</summary><p>No, por regla general se queda en su fecha. Solo se trasladan San Pedro y San Pablo y el Encuentro de Dos Mundos (Ley 19.668), y el Día de las Iglesias Evangélicas y Protestantes (Ley 20.299).</p></details>
