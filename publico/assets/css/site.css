@@ -329,6 +329,8 @@ tr.siguiente td { background: var(--color-feriado-fondo); }
 .en-corto p { margin: 0 0 0.4em; font-weight: var(--peso-fuerte); }
 .en-corto ul { margin: 0; }
 .contenido .tabla-envoltura { margin: 0 0 1em; }
+.contenido td small { display: block; color: var(--color-texto-3); font-size: var(--texto-s); margin-top: 2px; }
+.tabla-vencimientos td.fecha { white-space: normal; width: 34%; }
 .fuentes { color: var(--color-texto-2); font-size: var(--texto-s); }
 
 /* ---------- Espacios de anuncio (reservan su alto para que la página no salte) ---------- */

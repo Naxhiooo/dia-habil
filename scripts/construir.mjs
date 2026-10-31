@@ -5,15 +5,18 @@ import { createHash } from 'node:crypto';
 import { cp, mkdir, readFile, readdir, rm, writeFile } from 'node:fs/promises';
 import { dirname, join, relative, sep } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
-import { FERIADOS, REGIONES, RANGO, REVISADO } from '../publico/assets/js/feriados.js';
+import { FERIADOS, REGIONES, RANGO, REVISADO, feriadosDe } from '../publico/assets/js/feriados.js';
 import {
-  aNum, aISO, diaSemana, contarHabiles, construirDias, generarBloques, finesDeSemanaLargos, mejoresPuentes, describirBloque,
-  proximosFinesLargos,
+  aNum, aISO, diaSemana, sumarDias, calcularPlazo, contarHabiles, motivoInhabil, construirDias, generarBloques, finesDeSemanaLargos, mejoresPuentes,
+  describirBloque, proximosFinesLargos,
 } from '../publico/assets/js/fechas.js';
 import { fechaLarga, fechaCorta, MESES, DIAS, DIAS_CORTOS, plural, hoyEnChile } from '../publico/assets/js/formato.js';
 import { crearICS } from '../publico/assets/js/ics.js';
+import { NOTAS_FERIADO, FECHA_ORIGINAL } from './notas-feriados.mjs';
 
 export const SITIO = 'https://diahabil.cl';
+// Último cambio de contenido de las páginas, para el lastmod del sitemap. Se actualiza al publicar contenido nuevo.
+const CONTENIDO_ACTUALIZADO = '2026-10-31';
 const RAIZ = fileURLToPath(new URL('..', import.meta.url));
 
 // AdSense. Cada espacio de anuncio del sitio es "lateral" (junto a una herramienta) u "horizontal"
@@ -66,7 +69,7 @@ function mesEnCifras(anio, mes) {
     if (d >= 1 && d <= 5 && !lv.feriados.some((f) => f.fecha === aISO(n))) habilesLv.push(aISO(n));
   }
   const regionales = FERIADOS.filter((f) => f.alcance !== 'nacional' && f.fecha.slice(0, 7) === desde.slice(0, 7));
-  return { desde, hasta, lunVie: lv.habiles, lunSab: ls.habiles, corridos: lv.corridos, feriados: lv.feriados, regionales, primero: habilesLv[0], ultimo: habilesLv.at(-1) };
+  return { desde, hasta, lunVie: lv.habiles, lunSab: ls.habiles, corridos: lv.corridos, feriados: lv.feriados, regionales, habiles: habilesLv, primero: habilesLv[0], ultimo: habilesLv.at(-1) };
 }
 
 // Cifras de un año, para textos e imágenes de vista previa.
@@ -430,8 +433,232 @@ ${puentes.map((v) => `            <tr data-fecha="${v.desde}"><td>${esc(lista(v.
   return paginas;
 }
 
+// ---------- Contenido propio de cada mes ----------
+const MAPA_NACIONAL = feriadosDe('nacional');
+const sinAnio = (f) => fechaLarga(f, { conAnio: false });
+const diaDe = (f) => DIAS[diaSemana(aNum(f))];
+const motivoLunVie = (f) => motivoInhabil(aNum(f), 'lun-vie', MAPA_NACIONAL);
+const razonInhabil = (f) => ({ feriado: 'es feriado', sabado: 'cae sábado', domingo: 'cae domingo' })[motivoLunVie(f)];
+
+function siguienteHabil(fecha, mapa = MAPA_NACIONAL) {
+  let n = aNum(fecha);
+  while (motivoInhabil(n, 'lun-vie', mapa)) n += 1;
+  return aISO(n);
+}
+
+// Vencimientos generales de un mes. Reglas revisadas el 30-10-2026:
+// - IVA (SII, Código Tributario, art. 36): días 12 y 20; en sábado, domingo o feriado pasan al siguiente día hábil.
+//   Las fechas de 2026 coinciden con el calendario oficial del SII; en agosto, Chillán y Chillán Viejo tienen su propia fecha.
+// - Cotizaciones (D.L. 3.500, art. 19): día 10 con la misma prórroga; día 13 por internet, sin prórroga.
+// - Contribuciones, permiso de circulación y renta (ChileAtiende; Ley de la Renta, art. 69).
+export function vencimientosDelMes(anio, mes) {
+  const periodo = MESES[(mes + 10) % 12];
+  const conProrroga = (dia, que, aviso = '') => {
+    const original = iso(anio, mes, dia);
+    const fecha = siguienteHabil(original);
+    return { fecha, que, detalle: [fecha !== original ? `El ${dia} ${razonInhabil(original)}, así que pasa al siguiente día hábil.` : '', aviso].filter(Boolean).join(' ') };
+  };
+  const enChillan = siguienteHabil(iso(anio, mes, 20), feriadosDe('chillan'));
+  const dia13 = iso(anio, mes, 13);
+  const motivo13 = motivoLunVie(dia13);
+  const salida = [
+    conProrroga(10, `Cotizaciones previsionales de los sueldos de ${periodo}, si no las pagas por internet`),
+    conProrroga(12, `IVA de ${periodo} (Formulario 29), plazo general`),
+    {
+      fecha: dia13,
+      que: `Cotizaciones previsionales de los sueldos de ${periodo}, si las declaras y pagas por internet`,
+      detalle: motivo13 ? `No se corre al día siguiente, aunque el 13 sea ${{ feriado: 'feriado', sabado: 'sábado', domingo: 'domingo' }[motivo13]}.` : '',
+    },
+    conProrroga(20, `IVA de ${periodo} (Formulario 29), si declaras y pagas en sii.cl y emites facturas o boletas de honorarios electrónicas`,
+      enChillan !== siguienteHabil(iso(anio, mes, 20)) ? `En Chillán y Chillán Viejo, donde el 20 es feriado, vence el ${sinAnio(enChillan)}.` : ''),
+    { fecha: iso(anio, mes, 28), que: 'Formulario 29 sin movimiento y sin pago, por internet' },
+  ];
+  [4, 6, 9, 11].forEach((mesCuota, i) => {
+    const original = iso(anio, mesCuota, 30);
+    const fecha = siguienteHabil(original);
+    if (+fecha.slice(5, 7) !== mes) return;
+    salida.push({
+      fecha,
+      ficha: 'contribuciones',
+      que: `Contribuciones de bienes raíces, cuota ${i + 1} de 4`,
+      detalle: fecha !== original ? `El 30 de ${MESES[mesCuota - 1]} ${razonInhabil(original)}, así que pasa al siguiente día hábil.` : '',
+    });
+  });
+  if (mes === 3) salida.push({ fecha: iso(anio, 3, 31), ficha: 'permiso', que: 'Permiso de circulación de autos y motos (primera cuota) y seguro obligatorio SOAP' });
+  if (mes === 8) salida.push({ fecha: iso(anio, 8, 31), ficha: 'permiso', que: 'Permiso de circulación de autos y motos, segunda cuota' });
+  if (mes === 4) salida.push({ plazo: 'Todo abril', ficha: 'renta', que: 'Declaración anual de renta (Formulario 22)', detalle: 'El SII publica cada año las fechas exactas.' });
+  if (mes === 5) salida.push({ plazo: 'Todo mayo', ficha: 'permiso', que: 'Permiso de circulación de taxis y buses' });
+  if (mes === 9) salida.push({ plazo: 'Todo septiembre', ficha: 'permiso', que: 'Permiso de circulación de vehículos de carga' });
+  return salida.sort((a, b) => (a.fecha || '').localeCompare(b.fecha || ''));
+}
+const FICHAS_CHILEATIENDE = {
+  contribuciones: ['contribuciones', 'https://www.chileatiende.gob.cl/fichas/12176-pagar-contribuciones-de-bienes-raices'],
+  permiso: ['permiso de circulación', 'https://www.chileatiende.gob.cl/fichas/9611'],
+  renta: ['renta', 'https://www.chileatiende.gob.cl/fichas/3178-declaracion-de-renta'],
+};
+
+// Cómo se reparten los días hábiles de lunes a viernes en cada semana del mes.
+function semanasDelMes(m) {
+  const semanas = [];
+  let cuenta = 0;
+  for (let n = aNum(m.desde); n <= aNum(m.hasta); n += 1) {
+    const d = diaSemana(n);
+    if (d === 0 || d === 6) continue;
+    if (d === 1 || !semanas.length) semanas.push({ dias: [], orden: [], feriados: [] });
+    const semana = semanas.at(-1);
+    const fecha = aISO(n);
+    semana.dias.push(fecha);
+    if (MAPA_NACIONAL.has(fecha)) semana.feriados.push(MAPA_NACIONAL.get(fecha));
+    else semana.orden.push(cuenta += 1);
+  }
+  return semanas;
+}
+
+function trasladoDelFeriado(f) {
+  const origen = FECHA_ORIGINAL[f.nombre];
+  if (!origen) return '';
+  const anio = f.fecha.slice(0, 4);
+  const original = `${anio}-${origen}`;
+  const dia = `${+origen.slice(3)} de ${MESES[+origen.slice(0, 2) - 1]}`;
+  return f.fecha === original
+    ? `En ${anio}, el ${dia} cae ${diaDe(original)}, así que no se mueve.`
+    : `En ${anio}, el ${dia} cae ${diaDe(original)}, por eso se celebra el ${diaDe(f.fecha)} ${+f.fecha.slice(8)}.`;
+}
+
+function efectoDelFeriado(f, m) {
+  const d = diaSemana(aNum(f.fecha));
+  if (f.alcance !== 'nacional') {
+    if (!enSemana(f)) return `En ${f.fecha.slice(0, 4)} cae en fin de semana, así que no cambia los días hábiles de lunes a viernes.`;
+    const local = contarHabiles({ desde: m.desde, hasta: m.hasta, region: f.alcance, incluirDesde: true }).habiles;
+    return `Allí, ${MESES[+f.fecha.slice(5, 7) - 1]} de ${f.fecha.slice(0, 4)} tiene ${local} días hábiles de lunes a viernes, en vez de ${m.lunVie}.`;
+  }
+  if (d === 0) return 'Cae domingo, así que no descuenta días.';
+  if (d === 6) return 'Cae sábado: no descuenta días de lunes a viernes, pero sí de lunes a sábado.';
+  return `Cae ${DIAS[d]}, así que descuenta un día hábil.`;
+}
+
+// Lo que solo aplica a ciertos meses. Cada dato sale de las guías, donde están sus fuentes.
+function notasDelMes(anio, mes, m) {
+  const vacaciones = () => {
+    let n = aNum(m.desde);
+    while (diaSemana(n) !== 1 || MAPA_NACIONAL.has(aISO(n))) n += 1;
+    const inicio = aISO(n);
+    const fin = calcularPlazo({ inicio, dias: 15, desdeSiguiente: false }).vencimiento;
+    return `<strong>Vacaciones.</strong> La ley da preferencia a la primavera y el verano para tomarlas (Código del Trabajo, art. 67). Con 15 días hábiles desde el ${sinAnio(inicio)}, tu último día de vacaciones es el ${sinAnio(fin)} y, si trabajas de lunes a viernes, vuelves el ${sinAnio(siguienteHabil(sumarDias(fin, 1)))}. <a href="/guias/vacaciones-legales/">Guía de vacaciones legales →</a>`;
+  };
+  if (mes === 1) return [vacaciones()];
+  if (mes === 2) {
+    const corrido = siguienteHabil(m.hasta);
+    return [
+      `<strong>Plazos de meses.</strong> Se cuentan de fecha a fecha y, si el día no existe en el mes de término, vencen el último día de ese mes (Ley 19.880, art. 25). Con esa ley, un plazo de un mes contado desde el 31 de enero de ${anio} termina el ${sinAnio(m.hasta)}${corrido !== m.hasta ? `; como ese día es inhábil, pasa al ${sinAnio(corrido)}` : ''}.${m.corridos === 29 ? ` ${anio} es bisiesto, por eso febrero tiene 29 días.` : ''}`,
+      vacaciones(),
+    ];
+  }
+  if (mes === 7) {
+    return ['<strong>Vacaciones de invierno.</strong> Desde 2024, quien tiene el cuidado personal de un niño o niña menor de 14 años, o de un adolescente menor de 18 con discapacidad o dependencia severa o moderada, tiene preferencia para tomar sus vacaciones durante las vacaciones escolares. Debe pedirlo con al menos 30 días de anticipación y acreditarlo (Código del Trabajo, art. 67). <a href="/guias/vacaciones-legales/">Guía de vacaciones legales →</a>'];
+  }
+  if (mes === 9) {
+    const extra = FERIADOS.find((f) => f.nombre === 'Feriado adicional de Fiestas Patrias' && f.fecha.startsWith(String(anio)));
+    return [`<strong>Fiestas Patrias.</strong> El 18 y el 19 son fijos. Se suma un tercer feriado si caen martes y miércoles (el lunes 17), miércoles y jueves (el viernes 20) o sábado y domingo (el viernes 17). En ${anio} caen ${diaDe(iso(anio, 9, 18))} y ${diaDe(iso(anio, 9, 19))}, ${extra ? `por eso también es feriado el ${sinAnio(extra.fecha)}` : 'así que no hay día extra'}. <a href="/guias/feriados-que-se-mueven/">Guía de feriados que se mueven →</a>`];
+  }
+  if (mes === 12) {
+    return [
+      `<strong>El 24 y el 31 no son feriados.</strong> En ${anio} ambos caen ${diaDe(iso(anio, 12, 24))}. Aun así, esos días los trabajadores del comercio no pueden trabajar después de las 20:00, y en los quince días previos a Navidad la jornada se puede extender hasta dos horas durante un máximo de nueve días, nunca más allá de las 23:00 (Código del Trabajo, art. 24). <a href="/guias/feriados-irrenunciables/">Guía de feriados irrenunciables →</a>`,
+      '<strong>Los bancos, el 31 de diciembre.</strong> No atienden presencialmente ese día, salvo autorización de la CMF (Ley General de Bancos, art. 38, modificado por la <a href="https://www.bcn.cl/leychile/navegar?idLey=21791" rel="noopener">Ley 21.791</a>). Aun así, la ley aclara que no es feriado para efectos legales, salvo en el pago y protesto de letras de cambio; por eso aquí no lo descontamos. Los impuestos que vencen ese día pasan al siguiente día hábil (Código Tributario, art. 36).',
+    ];
+  }
+  return [];
+}
+
+function articuloDelMes({ r, m, mes, largos, puentes, todosLargos, resumenes }) {
+  const { anio } = r;
+  const nombre = MESES[mes - 1];
+  const semanas = semanasDelMes(m);
+
+  const plazo = (dias, modo) => calcularPlazo({ inicio: m.primero, dias, modo });
+  const celda = (p) => (p.fueraDeRango ? '—' : fechaCorta(p.vencimiento));
+  const ejemplos = [5, 10, 15, 20, 30].map((dias) => ({ dias, lunVie: plazo(dias, 'lun-vie'), lunSab: plazo(dias, 'lun-sab'), corridos: plazo(dias, 'corridos') }));
+  const hayFuera = ejemplos.some((e) => [e.lunVie, e.lunSab, e.corridos].some((p) => p.fueraDeRango));
+  const [cinco, diez, , veinte] = ejemplos.map((e) => e.lunVie);
+  const saltados = diez.fueraDeRango ? [] : diez.feriados.filter(enSemana);
+
+  const feriados = [...m.feriados, ...m.regionales].sort((a, b) => a.fecha.localeCompare(b.fecha));
+  const siguienteFeriado = FERIADOS.find((f) => f.alcance === 'nacional' && f.fecha > m.hasta);
+  const porSemanaSanta = { 3: ': Semana Santa cae en abril', 4: ': Semana Santa cae en marzo' }[mes] || '';
+
+  const notas = notasDelMes(anio, mes, m);
+  const vencimientos = vencimientosDelMes(anio, mes);
+  const fichas = [...new Set(vencimientos.flatMap((v) => v.ficha || []))].map((f) => `<a href="${FICHAS_CHILEATIENDE[f][1]}" rel="noopener">${FICHAS_CHILEATIENDE[f][0]}</a>`);
+
+  const tocaElMes = (v) => v.desde <= m.hasta && v.hasta >= m.desde;
+  const largosMes = largos.filter(tocaElMes);
+  const puentesMes = puentes.filter(tocaElMes);
+  const proximoLargo = todosLargos.find((v) => v.desde > m.hasta);
+  const porQue = (v) => lista([...new Set(v.feriados.map((f) => f.nombre))]);
+
+  const cifras = r.meses.map((x) => x.lunVie);
+  const mas = Math.max(...cifras);
+  const menos = Math.min(...cifras);
+  const mesesCon = (n) => lista(r.meses.flatMap((x, i) => (x.lunVie === n ? [MESES[i]] : [])));
+
+  return `
+    <article class="contenido" style="margin-top:clamp(28px,5vw,48px)">
+      <h2>Semana a semana</h2>
+      <p>Si un contrato o un trámite habla de "los primeros cinco días hábiles del mes", en ${nombre} de ${anio} llegan hasta el ${diaDe(m.habiles[4])} ${+m.habiles[4].slice(8)}; los primeros diez, hasta el ${diaDe(m.habiles[9])} ${+m.habiles[9].slice(8)}.</p>
+      <div class="tabla-envoltura"><table class="tabla-meses">
+        <thead><tr><th scope="col">Semana</th><th scope="col">Días hábiles</th><th scope="col">Orden en el mes</th></tr></thead>
+        <tbody>
+${semanas.map((s) => {
+    const [a, b] = [s.dias[0], s.dias.at(-1)];
+    const rotulo = a === b ? `${mayuscula(diaDe(a))} ${+a.slice(8)}` : `${mayuscula(diaDe(a))} ${+a.slice(8)} a ${diaDe(b)} ${+b.slice(8)}`;
+    const orden = !s.orden.length ? '—' : s.orden.length === 1 ? `${s.orden[0]}.°` : `${s.orden[0]}.° al ${s.orden.at(-1)}.°`;
+    const sin = s.feriados.length ? `<small>Sin ${esc(lista(s.feriados.map((f) => `el ${diaDe(f.fecha)} ${+f.fecha.slice(8)} (${f.nombre})`)))}</small>` : '';
+    return `          <tr><td>${rotulo}${sin}</td><td class="num">${s.orden.length}</td><td>${orden}</td></tr>`;
+  }).join('\n')}
+        </tbody>
+      </table></div>
+
+      <h2>Plazos que parten en ${nombre}</h2>
+      <p>Si te notifican el <strong>${sinAnio(m.primero)}</strong>, primer día hábil del mes, el conteo parte al día siguiente y el plazo vence así:</p>
+      <div class="tabla-envoltura"><table>
+        <thead><tr><th scope="col">Plazo</th><th scope="col">Lunes a viernes</th><th scope="col">Lunes a sábado</th><th scope="col">Corridos</th></tr></thead>
+        <tbody>
+${ejemplos.map((e) => `          <tr><td>${e.dias} días</td><td>${celda(e.lunVie)}</td><td>${celda(e.lunSab)}</td><td>${celda(e.corridos)}</td></tr>`).join('\n')}
+        </tbody>
+      </table></div>
+      ${hayFuera ? '<p class="ayuda">Los plazos que terminan en 2029 no aparecen porque aún no cargamos esos feriados.</p>' : ''}
+      <p>Los trámites ante organismos públicos se cuentan de lunes a viernes (Ley 19.880, art. 25): un recurso de reposición, de 5 días hábiles, vencería el ${sinAnio(cinco.vencimiento)}.${veinte.fueraDeRango ? '' : ` Si ese mismo día pides información por transparencia, el organismo tiene 20 días hábiles para responder, hasta el ${fechaLarga(veinte.vencimiento, { conAnio: veinte.vencimiento.slice(0, 4) !== String(anio) })} (Ley 20.285, art. 14).`}${saltados.length ? ` El plazo de 10 días hábiles no cuenta ${esc(lista(saltados.map((f) => `el ${diaDe(f.fecha)} ${+f.fecha.slice(8)} (${f.nombre})`)))}.` : ''} En los juicios civiles, el sábado sí cuenta. Los días corridos lo cuentan todo y pueden vencer en sábado o feriado. <a href="/guias/dias-habiles/">Cómo saber qué regla te aplica →</a></p>
+      <p>Para otra fecha u otra cantidad de días, usa la <a href="/plazos/?inicio=${m.primero}">calculadora de plazos</a>.</p>
+
+      <h2>${feriados.length ? `Qué saber de los feriados de ${nombre}` : 'Un mes sin feriados'}</h2>
+${feriados.length ? `      <ul>
+${feriados.map((f) => `        <li><strong>${mayuscula(sinAnio(f.fecha))}, ${esc(f.nombre)}.</strong> ${[NOTAS_FERIADO[f.nombre], trasladoDelFeriado(f), efectoDelFeriado(f, m)].filter(Boolean).join(' ')}</li>`).join('\n')}
+      </ul>` : `      <p>${mayuscula(nombre)} de ${anio} no tiene feriados nacionales${porSemanaSanta}.${siguienteFeriado ? ` El siguiente es el ${sinAnio(siguienteFeriado.fecha)}: ${esc(siguienteFeriado.nombre)}.` : ''}</p>`}
+${notas.length ? `
+      <h2>Para tener en cuenta en ${nombre}</h2>
+${notas.map((n) => `      <p>${n}</p>`).join('\n')}
+` : ''}
+      <h2>Qué vence en ${nombre} de ${anio}</h2>
+      <div class="tabla-envoltura"><table class="tabla-vencimientos">
+        <thead><tr><th scope="col">Cuándo</th><th scope="col">Qué vence</th></tr></thead>
+        <tbody>
+${vencimientos.map((v) => `          <tr><td class="fecha">${v.fecha ? mayuscula(sinAnio(v.fecha)) : v.plazo}</td><td>${esc(v.que)}${v.detalle ? `<small>${esc(v.detalle)}</small>` : ''}</td></tr>`).join('\n')}
+        </tbody>
+      </table></div>
+      <p class="ayuda">Fechas generales, calculadas con las reglas ${lista(['del <a href="https://www.sii.cl/preguntas_frecuentes/impuestos_mensuales/001_130_1060.htm" rel="noopener">SII</a>', 'de la <a href="https://www.spensiones.cl/portal/institucional/594/w3-article-17117.html" rel="noopener">Superintendencia de Pensiones</a>', ...(fichas.length ? [`de ChileAtiende (${lista(fichas)})`] : [])])}, revisadas el 30 de octubre de 2026. Si pagas el IVA con mandato bancario (PEC), el SII fija una fecha anterior. Para tu caso, confirma con el SII, tu AFP o tu contador.</p>
+
+      <h2>Fines de semana largos y puentes</h2>
+      <p>${largosMes.length ? `${largosMes.length === 1 ? 'Hay un fin de semana largo' : `Hay ${largosMes.length} fines de semana largos`} sin pedir días: ${esc(lista(largosMes.map((v) => `del ${rangoLargo(v.desde, v.hasta)} (${v.largo} días, por ${porQue(v)})`)))}.` : `${mayuscula(nombre)} de ${anio} no tiene fines de semana largos.${proximoLargo ? ` El siguiente es del ${esc(rangoLargo(proximoLargo.desde, proximoLargo.hasta))}${proximoLargo.desde.slice(0, 4) !== String(anio) ? ` de ${proximoLargo.desde.slice(0, 4)}` : ''}.` : ''}`}${puentesMes.length ? ` ${esc(puentesMes.map((v, i) => `${i ? 'pidiendo' : 'Pidiendo'} el ${lista(v.pedir.map((p) => `${diaDe(p)} ${+p.slice(8)}`))} de ${MESES[+v.pedir[0].slice(5, 7) - 1]} descansas ${v.largo} días seguidos, del ${rangoLargo(v.desde, v.hasta)}`).join('; '))}.` : ''}</p>
+      <p><a href="/fines-de-semana-largos/${anio}/">Todos los de ${anio}</a> · <a href="/vacaciones/?anio=${anio}">Planifica tus vacaciones</a></p>
+
+      <h2>${mayuscula(nombre)} en otros años</h2>
+      <p>Días hábiles de lunes a viernes: ${lista(resumenes.map((x) => (x.anio === anio ? `<strong>${x.meses[mes - 1].lunVie} en ${x.anio}</strong>` : `<a href="/dias-habiles/${x.anio}/${SLUG_MES[mes - 1]}/">${x.meses[mes - 1].lunVie} en ${x.anio}</a>`)))}. En ${anio}, lo máximo son ${mas} días hábiles (${mesesCon(mas)}) y lo mínimo, ${menos} (${mesesCon(menos)}).</p>
+    </article>`;
+}
+
 function paginasDiasHabiles(hoy) {
   const paginas = [];
+  const todosLargos = ANIOS.flatMap((a) => largosDe(a));
   const filaAnio = (anio) => {
     const meses = Array.from({ length: 12 }, (_, i) => mesEnCifras(anio, i + 1));
     return { anio, meses, lunVie: meses.reduce((s, m) => s + m.lunVie, 0), lunSab: meses.reduce((s, m) => s + m.lunSab, 0) };
@@ -496,6 +723,8 @@ ${r.meses.map((m, i) => `          <tr${m.desde.slice(0, 7) === mesActual ? ' cl
       }),
     });
 
+    const largos = largosDe(r.anio);
+    const puentes = puentesDe(r.anio);
     r.meses.forEach((m, i) => {
       const mes = i + 1;
       const nombre = MESES[i];
@@ -511,7 +740,7 @@ ${r.meses.map((m, i) => `          <tr${m.desde.slice(0, 7) === mesActual ? ' cl
         html: documento({
           ruta,
           titulo: `Días hábiles de ${nombre} ${r.anio} en Chile: ${m.lunVie} días | Día Hábil`,
-          descripcion: `${mayuscula(nombre)} de ${r.anio} tiene ${m.lunVie} días hábiles de lunes a viernes en Chile y ${m.lunSab} de lunes a sábado. Primer y último día hábil, feriados y calendario del mes.`,
+          descripcion: `${mayuscula(nombre)} de ${r.anio} tiene ${m.lunVie} días hábiles de lunes a viernes en Chile y ${m.lunSab} de lunes a sábado. Feriados, plazos de ejemplo, puentes y vencimientos del IVA y las cotizaciones.`,
           og: `dias-habiles-${r.anio}`,
           migas: [['Inicio', '/'], ['Días hábiles', '/dias-habiles/'], [String(r.anio), `/dias-habiles/${r.anio}/`], [mayuscula(nombre), ruta]],
           cuerpo: `
@@ -529,7 +758,7 @@ ${r.meses.map((m, i) => `          <tr${m.desde.slice(0, 7) === mesActual ? ' cl
         </div>
         <h2 style="font-size:var(--texto-xl);margin-top:var(--espacio-6)">Feriados de ${nombre}</h2>
         <ul class="saltados">
-${m.feriados.length ? m.feriados.map((f) => `          <li><span class="punto"></span><time datetime="${f.fecha}">${fechaCorta(f.fecha)}</time><span>${esc(f.nombre)}${enSemana(f) ? '' : ' (cae en fin de semana, no descuenta días)'}</span></li>`).join('\n') : '          <li><span>Este mes no tiene feriados nacionales.</span></li>'}
+${m.feriados.length ? m.feriados.map((f) => `          <li><span class="punto"></span><time datetime="${f.fecha}">${fechaCorta(f.fecha)}</time><span>${esc(f.nombre)}${enSemana(f) ? '' : diaSemana(aNum(f.fecha)) === 6 ? ' (cae sábado, solo descuenta de lunes a sábado)' : ' (cae domingo, no descuenta días)'}</span></li>`).join('\n') : '          <li><span>Este mes no tiene feriados nacionales.</span></li>'}
 ${m.regionales.map((f) => `          <li><span class="punto" style="background:var(--color-vacaciones)"></span><time datetime="${f.fecha}">${fechaCorta(f.fecha)}</time><span>${esc(f.nombre)}: solo en ${esc(REGIONES[f.alcance])}</span></li>`).join('\n')}
         </ul>
         <p class="detalle" style="margin-top:var(--espacio-4)">${habilesSemana.length ? `Se descuentan ${plural(habilesSemana.length, 'feriado', 'feriados')} en día de semana.` : 'Ningún feriado cae en día de semana este mes.'}${finde.length ? ` ${plural(finde.length, 'feriado cae', 'feriados caen')} en fin de semana.` : ''}</p>
@@ -546,6 +775,7 @@ ${m.regionales.map((f) => `          <li><span class="punto" style="background:v
         ${anuncio('lateral')}
       </div>
     </section>
+${articuloDelMes({ r, m, mes, largos, puentes, todosLargos, resumenes })}
     <nav class="paginacion" aria-label="Otros meses">
       ${anterior ? `<a href="${enlaceMes(anterior)}">← ${mayuscula(MESES[anterior[1] - 1])} ${anterior[0]}</a>` : '<span></span>'}
       <a href="/dias-habiles/${r.anio}/">Todo ${r.anio}</a>
@@ -742,7 +972,7 @@ export async function construir({ destino = join(RAIZ, 'dist'), hoy = hoyEnChile
   const prioridad = (r) => (r === '/' ? '1.0' : ['/plazos/', '/vacaciones/', '/feriados/'].includes(r) ? '0.9' : r.split('/').length > 4 ? '0.5' : '0.7');
   const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-${indexables.sort().map((r) => `  <url><loc>${SITIO}${r}</loc><lastmod>${REVISADO}</lastmod><priority>${prioridad(r)}</priority></url>`).join('\n')}
+${indexables.sort().map((r) => `  <url><loc>${SITIO}${r}</loc><lastmod>${CONTENIDO_ACTUALIZADO > REVISADO ? CONTENIDO_ACTUALIZADO : REVISADO}</lastmod><priority>${prioridad(r)}</priority></url>`).join('\n')}
 </urlset>
 `;
   await writeFile(join(destino, 'sitemap.xml'), sitemap);
